@@ -92,8 +92,21 @@ python3 -m unittest discover -s tests
 |----------|---------|-------------|
 | `PORT` | `8080` | API listen port. |
 | `QUOTE_PROVIDER_MODE` | `mock` | `mock` or `live`. |
-| `QUOTE_PROVIDER_NAME` | `mock` | Provider identifier for diagnostics. |
-| `QUOTE_PROVIDER_API_KEY` | None | Reserved for live provider integration. |
+| `QUOTE_PROVIDER_NAME` | `mock` | `mock` or `alpha_vantage`. |
+| `QUOTE_PROVIDER_API_KEY` | None | Alpha Vantage key for live mode. |
 | `QUOTE_PROVIDER_TIMEOUT_MS` | `1500` | Outbound provider timeout. |
 | `ALLOW_REQUEST_PROVIDER_OVERRIDE` | `false` | Allows request `options.providerMode` override. |
 | `LOG_LEVEL` | `info` | Runtime log level. |
+
+## Live Alpha Vantage Mode
+
+Copy `.env.example` to `.env` and replace the placeholder key locally. `.env` is ignored by Git.
+
+```sh
+QUOTE_PROVIDER_MODE=live
+QUOTE_PROVIDER_NAME=alpha_vantage
+QUOTE_PROVIDER_API_KEY=replace-with-local-alpha-vantage-key
+QUOTE_PROVIDER_TIMEOUT_MS=1500
+```
+
+The live provider calls Alpha Vantage `GLOBAL_QUOTE` and normalizes the response into the same quote shape used by mock mode. Provider rate-limit, invalid-key, empty quote, and timeout conditions map into the existing OIC exception branches.

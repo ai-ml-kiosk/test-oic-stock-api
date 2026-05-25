@@ -239,10 +239,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
+    parser.add_argument("--title", default="OIC Stock Alert Completion Report")
     args = parser.parse_args()
 
     markdown = args.source.read_text(encoding="utf-8")
-    writer = PdfWriter("OIC Stock Alert Completion Report")
+    writer = PdfWriter(args.title)
     for block in parse_markdown(markdown):
         writer.write_block(block)
     writer.write_pdf(args.target)
@@ -250,4 +251,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,6 +1,6 @@
 # oic-stock-alert - Design Document
 
-> Version: 1.0.0 | Date: 2026-05-25 | Status: Complete
+> Version: 1.1.0 | Date: 2026-05-26 | Status: Complete
 > Level: Starter | Plan: `docs/01-plan/features/oic-stock-alert.plan.md`
 
 ---
@@ -11,11 +11,18 @@ The OIC Stock Alert application is a stateless HTTP API designed to be called fr
 
 Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
 
+Derived design artifacts:
+
+- HLD: `docs/02-design/features/oic-stock-alert.hld.md` and `design/oic-stock-alert-hld.pdf`
+- LLD: `docs/02-design/features/oic-stock-alert.lld.md` and `design/oic-stock-alert-lld.pdf`
+
 The MVP keeps the service intentionally small:
 
 - A health endpoint for runtime validation.
 - A single alert evaluation endpoint for OIC orchestration.
 - A quote provider abstraction with mock mode as the default local path.
+- A live Alpha Vantage provider path for `GLOBAL_QUOTE` orchestration when explicitly enabled.
+- A zero-trust local `.env` configuration layer for API keys, with committed `.env.example` placeholders only.
 - Deterministic JSON contracts for success, no-alert, input error, and provider failure outcomes.
 - Branch-friendly fields such as `decision.code`, `decision.triggered`, `decision.severity`, and `oic.switchBranch`.
 
@@ -27,18 +34,19 @@ The MVP keeps the service intentionally small:
 |-----------|----------------|
 | API Router | Defines HTTP endpoints, parses JSON, invokes validation and service logic. |
 | Request Validator | Validates required fields, stock symbol format, rule operators, thresholds, and callback metadata. |
-| Quote Provider | Fetches current quote data. Uses `mock` mode locally and `live` mode when provider credentials exist. |
+| Quote Provider | Fetches current quote data. Uses `mock` mode locally and Alpha Vantage `GLOBAL_QUOTE` when `live` mode is explicitly configured. |
 | Alert Evaluator | Compares normalized quote values against alert rules and produces rule-level outcomes. |
 | Response Mapper | Builds OIC-friendly response JSON with stable decision and switch branch fields. |
 | Error Mapper | Converts validation, provider, timeout, and unexpected errors into predictable error responses. |
-| Logger | Emits request ID, symbol, provider mode, elapsed time, decision code, and error code without secrets. |
+| `.env` Config Loader | Parses local untracked `.env` values into runtime settings without exposing secrets to Git, logs, diagnostics, or responses. |
+| Logger | Emits request ID, symbol, provider mode, elapsed time, decision code, and error code without secrets or full provider URLs. |
 
 ### 2.2 Request Flow
 
 1. OIC invokes `POST /v1/alerts/evaluate` with a stock symbol, rule set, and optional OIC metadata.
 2. API assigns or propagates `requestId`.
 3. Validator checks JSON shape and field-level constraints.
-4. Quote Provider retrieves normalized quote data.
+4. Quote Provider retrieves normalized quote data from mock fixtures or Alpha Vantage `GLOBAL_QUOTE`.
 5. Alert Evaluator evaluates every rule against the quote.
 6. Response Mapper derives the aggregate decision and OIC Switch branch.
 7. API returns HTTP status and JSON response to OIC.
@@ -59,12 +67,51 @@ Module layout:
 | Module | Purpose |
 |--------|---------|
 | `oic_stock_alert/config.py` | Environment-based runtime settings. |
+| `oic_stock_alert/env_loader.py` | Local `.env` parser for development secrets and provider settings. |
 | `oic_stock_alert/validation.py` | Request normalization and validation. |
-| `oic_stock_alert/quote_provider.py` | Mock quote provider and provider error fixtures. |
+| `oic_stock_alert/quote_provider.py` | Provider selection, mock quote provider, and shared provider errors. |
+| `oic_stock_alert/alpha_vantage_provider.py` | Alpha Vantage `GLOBAL_QUOTE` outbound REST client and response normalizer. |
 | `oic_stock_alert/evaluator.py` | Rule evaluation and aggregate decision logic. |
 | `oic_stock_alert/mapper.py` | Success and error response mapping. |
 | `oic_stock_alert/app.py` | Application service layer. |
 | `oic_stock_alert/server.py` | HTTP route handling and server entry point. |
+
+### 2.4 Alpha Vantage Live Provider Architecture
+
+The live provider path is enabled only when runtime configuration selects live mode:
+
+```text
+QUOTE_PROVIDER_MODE=live
+QUOTE_PROVIDER_NAME=alpha_vantage
+QUOTE_PROVIDER_API_KEY=<local secret>
+QUOTE_PROVIDER_TIMEOUT_MS=1500
+```
+
+Outbound request shape:
+
+```text
+GET https://www.alphavantage.co/query
+  ?function=GLOBAL_QUOTE
+  &symbol={normalizedSymbol}
+  &apikey={secretApiKey}
+```
+
+Optional request parameters:
+
+| Parameter | Design |
+|-----------|--------|
+| `datatype` | Omitted for MVP so Alpha Vantage returns JSON by default. |
+| `entitlement` | Omitted for MVP; realtime or 15-minute delayed freshness requires the appropriate Alpha Vantage entitlement. |
+
+Provider design rules:
+
+- Never log the full provider URL because it contains the API key.
+- Apply `QUOTE_PROVIDER_TIMEOUT_MS` to the outbound request, defaulting to 1500 ms.
+- Parse provider responses into the existing internal `Quote` shape before rule evaluation.
+- Preserve the existing OIC response contract and Switch branch values.
+- Map Alpha Vantage empty quote, rate-limit note, invalid-key information, timeout, and malformed payloads into stable downstream OIC exception branches.
+
+Official reference: `https://www.alphavantage.co/documentation/`
 
 ## 3. API Specification
 
@@ -302,6 +349,23 @@ Error HTTP status:
 | `OicRouting` | `switchBranch`, `notificationRecommended`, `retryRecommended`, `trackingId` |
 | `ApiError` | `code`, `message`, `details` |
 
+### 5.3 Alpha Vantage Normalized Quote
+
+The Alpha Vantage `Global Quote` object is string-valued and must be normalized before evaluation.
+
+| Alpha Vantage Field | Internal Quote Field | Conversion |
+|---------------------|----------------------|------------|
+| `01. symbol` | `symbol` | String, uppercased by prior validation. |
+| `03. high` | `dayHigh` | Decimal string to number. |
+| `04. low` | `dayLow` | Decimal string to number. |
+| `05. price` | `lastPrice` | Decimal string to number. |
+| `06. volume` | `volume` | Integer string to integer. |
+| `07. latest trading day` | `asOf` | Date string converted to an ISO-style timestamp or date-preserving UTC value. |
+| `09. change` | `change` | Decimal string to number. |
+| `10. change percent` | `changePercent` | Percent string without `%` converted to number. |
+| constant | `currency` | `USD` for MVP equity quotes unless a future provider supplies currency. |
+| constant | `provider` | `alpha_vantage`. |
+
 ### 5.2 Enumerations
 
 Decision codes:
@@ -341,6 +405,28 @@ Severities:
 | `source.instanceId` | `oic.trackingId` | Copy when present; otherwise use `requestId`. |
 | `options.providerMode` | provider mode | Use request value only if runtime allows override; otherwise use environment default. |
 
+### 6.1.1 `.env` Configuration Normalization
+
+Local configuration may be loaded from an untracked `.env` file before settings are finalized.
+
+Parsing rules:
+
+- Accept `KEY=value` lines with optional surrounding whitespace.
+- Ignore blank lines and `#` comments.
+- Do not evaluate shell expressions, command substitution, or nested variable expansion.
+- Process environment variables take precedence over `.env` values when both exist.
+- Never expose `QUOTE_PROVIDER_API_KEY` through diagnostics or error details.
+
+Expected committed template:
+
+```sh
+QUOTE_PROVIDER_MODE=live
+QUOTE_PROVIDER_NAME=alpha_vantage
+QUOTE_PROVIDER_API_KEY=replace-with-local-alpha-vantage-key
+QUOTE_PROVIDER_TIMEOUT_MS=1500
+ALLOW_REQUEST_PROVIDER_OVERRIDE=false
+```
+
 ### 6.2 Rule Evaluation
 
 | Operator | Logic |
@@ -379,6 +465,18 @@ Severity order:
 | `QUOTE_UNAVAILABLE` | `false` | Route to business exception handling or monitoring. |
 | `PROVIDER_TIMEOUT` | `false` | Retry or route to recoverable fault handling. |
 | `SYSTEM_ERROR` | `false` | Route to technical fault handling and incident logging. |
+
+### 6.5 Alpha Vantage Error Mapping
+
+| Upstream Condition | Detection | API Error | Switch Branch | Retry |
+|--------------------|-----------|-----------|---------------|-------|
+| Empty `Global Quote` object | Missing or empty quote object | `QUOTE_NOT_FOUND` | `QUOTE_UNAVAILABLE` | No |
+| Invalid symbol payload | Empty quote for validated symbol | `QUOTE_NOT_FOUND` | `QUOTE_UNAVAILABLE` | No |
+| Rate limit note | Provider response includes `Note` | `PROVIDER_ERROR` | `QUOTE_UNAVAILABLE` | Maybe by OIC policy |
+| Invalid API key / entitlement message | Provider response includes `Information` or similar provider message | `PROVIDER_ERROR` | `QUOTE_UNAVAILABLE` | No |
+| Timeout | Outbound request exceeds `QUOTE_PROVIDER_TIMEOUT_MS` | `PROVIDER_TIMEOUT` | `PROVIDER_TIMEOUT` | Yes |
+| Non-JSON or malformed payload | JSON parse or expected-field failure | `PROVIDER_ERROR` | `QUOTE_UNAVAILABLE` | Maybe by OIC policy |
+| Unexpected client exception | Unhandled provider client error | `SYSTEM_ERROR` | `SYSTEM_ERROR` | Yes |
 
 ## 7. OIC Switch Branch Structure
 
@@ -518,6 +616,13 @@ Behavior:
 | `ALLOW_REQUEST_PROVIDER_OVERRIDE` | No | `false` | Allows `options.providerMode` to override runtime mode. |
 | `LOG_LEVEL` | No | `info` | Runtime logging level. |
 
+Local `.env` behavior:
+
+- `.env` and `.env*` remain untracked.
+- `.env.example` may be committed with placeholder values only.
+- Runtime environment variables override `.env` values.
+- Production runtimes should inject secrets through platform-managed environment variables or secret stores rather than committing local secret files.
+
 ## 10. Validation Rules
 
 - Reject request bodies larger than the chosen framework default for small JSON requests, with a target maximum of 64 KB.
@@ -541,6 +646,13 @@ Behavior:
 | Multiple triggered rules with different severities | Aggregate severity is highest severity. |
 | Duplicate `ruleId` values | Validation error. |
 | Unsupported metric | `INPUT_ERROR`. |
+| `.env` parser ignores comments and blank lines | Settings load without secret exposure. |
+| Process environment overrides `.env` value | Runtime setting follows process environment. |
+| Alpha Vantage quote normalization | Numeric quote fields are parsed into internal `Quote`. |
+| Alpha Vantage rate-limit note | `PROVIDER_ERROR`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
+| Alpha Vantage empty quote | `QUOTE_NOT_FOUND`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
+| Alpha Vantage timeout | `PROVIDER_TIMEOUT`, `oic.switchBranch = PROVIDER_TIMEOUT`, `retryRecommended = true`. |
+| Secret redaction | API key is absent from logs, diagnostics, errors, and test output. |
 
 ### 11.2 API Contract Tests
 
@@ -552,6 +664,8 @@ Behavior:
 | Invalid symbol | `400`, `error.code = VALIDATION_ERROR`, `oic.switchBranch = INPUT_ERROR`. |
 | Mock provider quote missing | `502`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 | Simulated provider timeout | `504`, `oic.switchBranch = PROVIDER_TIMEOUT`, `retryRecommended = true`. |
+| Live mode without API key | `502`, `error.code = PROVIDER_ERROR`, no secret in response. |
+| Live mode Alpha Vantage invalid symbol fixture | `502`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 
 ### 11.3 OIC Mapping Verification
 
@@ -580,6 +694,11 @@ python3 -m unittest discover -s tests
 9. Add unit tests for evaluator and mapper. Done.
 10. Add API contract checks using the selected test runner. Done.
 11. Document local run and OIC mapping examples. Done.
+12. Add `.env.example` with placeholder Alpha Vantage settings. Pending.
+13. Add `.env` parser and setting precedence tests. Pending.
+14. Add Alpha Vantage live provider module and fixture-based tests. Pending.
+15. Wire live provider selection behind `QUOTE_PROVIDER_MODE=live` and `QUOTE_PROVIDER_NAME=alpha_vantage`. Pending.
+16. Verify OIC branch mappings for Alpha Vantage rate-limit, invalid-symbol, timeout, and malformed-payload cases. Pending.
 
 ## 13. Traceability
 
@@ -593,13 +712,15 @@ python3 -m unittest discover -s tests
 | FR-006 Error handling | Sections 4.5 and 8 |
 | FR-007 Mock provider | Sections 2.1, 9, and 11 |
 | FR-008 Diagnostics | Sections 4.3, 6.1, and 9 |
+| FR-009 `.env` credential parsing | Sections 2.1, 6.1.1, 9, and 11 |
+| FR-010 Alpha Vantage `GLOBAL_QUOTE` outbound mapping | Sections 2.4, 5.3, 6.5, and 11 |
 
 ## 14. Open Questions
 
-- Which live stock quote provider should be used after mock mode is verified?
 - Should the API persist watchlists later, or should OIC remain the system of record for alert rules?
 - Which notification channels should OIC invoke when `ALERT_TRIGGERED` is returned?
 - Should `QUOTE_UNAVAILABLE` ever retry automatically for provider-specific transient errors?
+- Should Alpha Vantage `entitlement=delayed` or `entitlement=realtime` be supported as an optional setting for premium API keys?
 
 ## 15. Repository Publication
 

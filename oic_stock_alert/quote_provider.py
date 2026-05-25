@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from .alpha_vantage_provider import get_alpha_vantage_quote
 from .config import Settings
 from .errors import ProviderError, ProviderTimeoutError, QuoteNotFoundError
 
@@ -17,7 +18,10 @@ def get_quote(symbol: str, settings: Settings, requested_mode: str | None = None
     if mode == "mock":
         return _mock_quote(symbol)
     if mode == "live":
-        raise ProviderError("Live quote provider is not configured for this MVP")
+        provider_name = settings.quote_provider_name.strip().lower()
+        if provider_name == "alpha_vantage":
+            return get_alpha_vantage_quote(symbol, settings)
+        raise ProviderError(f"Unsupported live quote provider: {provider_name}")
     raise ProviderError(f"Unsupported quote provider mode: {mode}")
 
 
@@ -65,4 +69,3 @@ def _mock_quote(symbol: str) -> dict[str, Any]:
         "provider": "mock",
         **quote,
     }
-

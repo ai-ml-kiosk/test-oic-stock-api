@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from .env_loader import apply_env_defaults, load_env_file
+
 
 def _env_bool(name: str, default: bool = False) -> bool:
     value = os.getenv(name)
@@ -35,6 +37,7 @@ class Settings:
 
 
 def load_settings() -> Settings:
+    apply_env_defaults(load_env_file())
     return Settings(
         port=_env_int("PORT", 8080),
         quote_provider_mode=os.getenv("QUOTE_PROVIDER_MODE", "mock").strip().lower(),
@@ -44,4 +47,3 @@ def load_settings() -> Settings:
         allow_request_provider_override=_env_bool("ALLOW_REQUEST_PROVIDER_OVERRIDE", False),
         log_level=os.getenv("LOG_LEVEL", "info").strip().lower(),
     )
-

@@ -1,0 +1,587 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Length 3068 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 1) Tj ET
+BT /F2 18 Tf 54 734 Td (OIC Stock Alert - Low-Level Design) Tj ET
+54 720 m 558 720 l S
+BT /F3 10 Tf 54 698 Td (Version: 1.1.0 | Date: 2026-05-26 | Status: Complete) Tj ET
+BT /F3 10 Tf 54 684 Td (Source Design: docs/02-design/features/oic-stock-alert.design.md) Tj ET
+BT /F3 10 Tf 54 670 Td (Repository: https://github.com/ai-ml-kiosk/test-oic-stock-api) Tj ET
+BT /F1 10 Tf 54 650 Td (---) Tj ET
+BT /F2 14 Tf 54 626 Td (1. Purpose) Tj ET
+BT /F1 10 Tf 54 600 Td (This Low-Level Design defines the detailed contracts and implementation logic for the) Tj ET
+BT /F1 10 Tf 54 586 Td (OIC Stock Alert API. It covers JSON payload specifications, mapping logic, validation) Tj ET
+BT /F1 10 Tf 54 572 Td (rules, OIC Switch branch structures, module-level behavior, and test cases.) Tj ET
+BT /F1 10 Tf 54 552 Td (The companion HLD is:) Tj ET
+BT /F1 10 Tf 54 532 Td (docs/02-design/features/oic-stock-alert.hld.md) Tj ET
+BT /F2 14 Tf 54 508 Td (2. Source Artifacts) Tj ET
+BT /F4 8 Tf 54 482 Td (Artifact | Purpose) Tj ET
+BT /F4 8 Tf 54 471 Td (artifacts/openapi/oic-stock-alert.openapi.json | REST API contract.) Tj ET
+BT /F4 8 Tf 54 460 Td (artifacts/json-schema/alert-evaluation-request.schema.json | Request payload schema.) Tj ET
+BT /F4 8 Tf 54 449 Td (artifacts/json-schema/alert-evaluation-response.schema.json | Success and error response) Tj ET
+BT /F4 8 Tf 54 438 Td (schema.) Tj ET
+BT /F4 8 Tf 54 427 Td (artifacts/oic/oic-switch-branches.md | OIC Switch expression and branch mapping guide.) Tj ET
+BT /F4 8 Tf 54 416 Td (artifacts/samples/*.json | Example request, success, no-alert, validation error, and) Tj ET
+BT /F4 8 Tf 54 405 Td (timeout payloads.) Tj ET
+BT /F2 14 Tf 54 384 Td (3. Endpoint Detail) Tj ET
+BT /F2 11 Tf 54 358 Td (3.1 `GET /health`) Tj ET
+BT /F1 10 Tf 54 335 Td (Response status:) Tj ET
+BT /F1 10 Tf 54 315 Td (- 200 OK) Tj ET
+BT /F1 10 Tf 54 295 Td (Response fields:) Tj ET
+BT /F4 8 Tf 54 275 Td (Field | Type | Description) Tj ET
+BT /F4 8 Tf 54 264 Td (status | string | ok when service is running.) Tj ET
+BT /F4 8 Tf 54 253 Td (service | string | oic-stock-alert.) Tj ET
+BT /F4 8 Tf 54 242 Td (version | string | API version.) Tj ET
+BT /F4 8 Tf 54 231 Td (providerMode | string | Active quote provider mode.) Tj ET
+BT /F4 8 Tf 54 220 Td (timestamp | string | UTC timestamp in ISO-8601 format.) Tj ET
+BT /F2 11 Tf 54 203 Td (3.2 `POST /v1/alerts/evaluate`) Tj ET
+BT /F1 10 Tf 54 180 Td (Request headers:) Tj ET
+BT /F4 8 Tf 54 160 Td (Header | Required | Description) Tj ET
+BT /F4 8 Tf 54 149 Td (Content-Type: application/json | Yes | JSON payload format.) Tj ET
+BT /F4 8 Tf 54 138 Td (X-Request-Id | No | Caller-provided correlation ID fallback.) Tj ET
+BT /F1 10 Tf 54 121 Td (Status mapping:) Tj ET
+BT /F4 8 Tf 54 101 Td (Condition | HTTP Status) Tj ET
+BT /F4 8 Tf 54 90 Td (Valid evaluation, alert triggered | 200) Tj ET
+BT /F4 8 Tf 54 79 Td (Valid evaluation, no alert | 200) Tj ET
+BT /F4 8 Tf 54 68 Td (Invalid JSON or validation failure | 400) Tj ET
+Q
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 3681 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 2) Tj ET
+BT /F4 8 Tf 54 734 Td (Unsupported rule configuration | 422) Tj ET
+BT /F4 8 Tf 54 723 Td (Quote not found or provider error | 502) Tj ET
+BT /F4 8 Tf 54 712 Td (Provider timeout | 504) Tj ET
+BT /F4 8 Tf 54 701 Td (Unexpected exception | 500) Tj ET
+BT /F2 14 Tf 54 680 Td (4. Request JSON Payload) Tj ET
+BT /F1 10 Tf 54 654 Td (Canonical request:) Tj ET
+BT /F4 8 Tf 54 634 Td ({) Tj ET
+BT /F4 8 Tf 54 623 Td (  "requestId": "oic-run-20260525-001",) Tj ET
+BT /F4 8 Tf 54 612 Td (  "source": {) Tj ET
+BT /F4 8 Tf 54 601 Td (    "system": "OIC",) Tj ET
+BT /F4 8 Tf 54 590 Td (    "integrationName": "StockAlertIntegration",) Tj ET
+BT /F4 8 Tf 54 579 Td (    "instanceId": "300000123456789") Tj ET
+BT /F4 8 Tf 54 568 Td (  },) Tj ET
+BT /F4 8 Tf 54 557 Td (  "symbol": "ORCL",) Tj ET
+BT /F4 8 Tf 54 546 Td (  "currency": "USD",) Tj ET
+BT /F4 8 Tf 54 535 Td (  "rules": [) Tj ET
+BT /F4 8 Tf 54 524 Td (    {) Tj ET
+BT /F4 8 Tf 54 513 Td (      "ruleId": "orcl-above-150",) Tj ET
+BT /F4 8 Tf 54 502 Td (      "metric": "lastPrice",) Tj ET
+BT /F4 8 Tf 54 491 Td (      "operator": "gte",) Tj ET
+BT /F4 8 Tf 54 480 Td (      "threshold": 150.0,) Tj ET
+BT /F4 8 Tf 54 469 Td (      "severity": "high",) Tj ET
+BT /F4 8 Tf 54 458 Td (      "message": "ORCL crossed target price") Tj ET
+BT /F4 8 Tf 54 447 Td (    }) Tj ET
+BT /F4 8 Tf 54 436 Td (  ],) Tj ET
+BT /F4 8 Tf 54 425 Td (  "options": {) Tj ET
+BT /F4 8 Tf 54 414 Td (    "providerMode": "mock",) Tj ET
+BT /F4 8 Tf 54 403 Td (    "includeDiagnostics": true) Tj ET
+BT /F4 8 Tf 54 392 Td (  }) Tj ET
+BT /F4 8 Tf 54 381 Td (}) Tj ET
+BT /F1 10 Tf 54 360 Td (Field rules:) Tj ET
+BT /F4 8 Tf 54 340 Td (Field | Required | Type | Rule) Tj ET
+BT /F4 8 Tf 54 329 Td (requestId | No | string | Max 80 characters. Body value wins over header fallback.) Tj ET
+BT /F4 8 Tf 54 318 Td (source.system | No | string | Expected OIC for OIC calls.) Tj ET
+BT /F4 8 Tf 54 307 Td (source.integrationName | No | string | Max 120 characters.) Tj ET
+BT /F4 8 Tf 54 296 Td (source.instanceId | No | string | Copied to oic.trackingId when present.) Tj ET
+BT /F4 8 Tf 54 285 Td (symbol | Yes | string | Trimmed, uppercased, pattern ^[A-Z][A-Z0-9.:-]{0,14}$.) Tj ET
+BT /F4 8 Tf 54 274 Td (currency | No | string | 3-letter code, uppercased.) Tj ET
+BT /F4 8 Tf 54 263 Td (rules | Yes | array | Minimum 1, maximum 10.) Tj ET
+BT /F4 8 Tf 54 252 Td (rules[].ruleId | Yes | string | Unique per request, max 80 characters.) Tj ET
+BT /F4 8 Tf 54 241 Td (rules[].metric | Yes | string | lastPrice, changePercent, dayHigh, dayLow, or volume.) Tj ET
+BT /F4 8 Tf 54 230 Td (rules[].operator | Yes | string | gt, gte, lt, lte, eq, or absGte.) Tj ET
+BT /F4 8 Tf 54 219 Td (rules[].threshold | Yes | number | Finite numeric value. Non-negative except for) Tj ET
+BT /F4 8 Tf 54 208 Td (changePercent.) Tj ET
+BT /F4 8 Tf 54 197 Td (rules[].severity | No | string | info, warning, high, or critical; defaults to warning.) Tj ET
+BT /F4 8 Tf 54 186 Td (rules[].message | No | string | Max 240 characters; defaults to empty string.) Tj ET
+BT /F4 8 Tf 54 175 Td (options.providerMode | No | string | mock or live. Runtime config controls override) Tj ET
+BT /F4 8 Tf 54 164 Td (support.) Tj ET
+BT /F4 8 Tf 54 153 Td (options.includeDiagnostics | No | boolean | Defaults to false.) Tj ET
+BT /F2 14 Tf 54 132 Td (4.1 Local `.env` Configuration Payload) Tj ET
+BT /F1 10 Tf 54 106 Td (Local live-provider testing uses an untracked .env file. The committed artifact is) Tj ET
+BT /F1 10 Tf 54 92 Td (.env.example with placeholder values only.) Tj ET
+BT /F4 8 Tf 54 72 Td (QUOTE_PROVIDER_MODE=live) Tj ET
+Q
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 3211 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 3) Tj ET
+BT /F4 8 Tf 54 734 Td (QUOTE_PROVIDER_NAME=alpha_vantage) Tj ET
+BT /F4 8 Tf 54 723 Td (QUOTE_PROVIDER_API_KEY=replace-with-local-alpha-vantage-key) Tj ET
+BT /F4 8 Tf 54 712 Td (QUOTE_PROVIDER_TIMEOUT_MS=1500) Tj ET
+BT /F4 8 Tf 54 701 Td (ALLOW_REQUEST_PROVIDER_OVERRIDE=false) Tj ET
+BT /F1 10 Tf 54 680 Td (Parser rules:) Tj ET
+BT /F1 10 Tf 54 660 Td (- Accept KEY=value lines.) Tj ET
+BT /F1 10 Tf 54 646 Td (- Trim surrounding whitespace around keys and values.) Tj ET
+BT /F1 10 Tf 54 632 Td (- Ignore blank lines and lines beginning with #.) Tj ET
+BT /F1 10 Tf 54 618 Td (- Do not execute shell commands, substitutions, or nested variable expansion.) Tj ET
+BT /F1 10 Tf 54 604 Td (- Process environment variables override .env values.) Tj ET
+BT /F1 10 Tf 54 590 Td (- Do not expose QUOTE_PROVIDER_API_KEY in diagnostics, logs, exceptions, or) Tj ET
+BT /F1 10 Tf 68 576 Td (responses.) Tj ET
+BT /F2 14 Tf 54 552 Td (5. Response JSON Payloads) Tj ET
+BT /F2 11 Tf 54 526 Td (5.1 Success Response) Tj ET
+BT /F4 8 Tf 54 503 Td ({) Tj ET
+BT /F4 8 Tf 54 492 Td (  "requestId": "oic-run-20260525-001",) Tj ET
+BT /F4 8 Tf 54 481 Td (  "status": "success",) Tj ET
+BT /F4 8 Tf 54 470 Td (  "symbol": "ORCL",) Tj ET
+BT /F4 8 Tf 54 459 Td (  "quote": {) Tj ET
+BT /F4 8 Tf 54 448 Td (    "symbol": "ORCL",) Tj ET
+BT /F4 8 Tf 54 437 Td (    "lastPrice": 152.31,) Tj ET
+BT /F4 8 Tf 54 426 Td (    "currency": "USD",) Tj ET
+BT /F4 8 Tf 54 415 Td (    "change": 2.14,) Tj ET
+BT /F4 8 Tf 54 404 Td (    "changePercent": 1.43,) Tj ET
+BT /F4 8 Tf 54 393 Td (    "dayHigh": 153.2,) Tj ET
+BT /F4 8 Tf 54 382 Td (    "dayLow": 149.7,) Tj ET
+BT /F4 8 Tf 54 371 Td (    "volume": 12654321,) Tj ET
+BT /F4 8 Tf 54 360 Td (    "asOf": "2026-05-25T05:30:00Z",) Tj ET
+BT /F4 8 Tf 54 349 Td (    "provider": "mock") Tj ET
+BT /F4 8 Tf 54 338 Td (  },) Tj ET
+BT /F4 8 Tf 54 327 Td (  "rules": [) Tj ET
+BT /F4 8 Tf 54 316 Td (    {) Tj ET
+BT /F4 8 Tf 54 305 Td (      "ruleId": "orcl-above-150",) Tj ET
+BT /F4 8 Tf 54 294 Td (      "metric": "lastPrice",) Tj ET
+BT /F4 8 Tf 54 283 Td (      "operator": "gte",) Tj ET
+BT /F4 8 Tf 54 272 Td (      "threshold": 150.0,) Tj ET
+BT /F4 8 Tf 54 261 Td (      "actualValue": 152.31,) Tj ET
+BT /F4 8 Tf 54 250 Td (      "triggered": true,) Tj ET
+BT /F4 8 Tf 54 239 Td (      "severity": "high",) Tj ET
+BT /F4 8 Tf 54 228 Td (      "message": "ORCL crossed target price") Tj ET
+BT /F4 8 Tf 54 217 Td (    }) Tj ET
+BT /F4 8 Tf 54 206 Td (  ],) Tj ET
+BT /F4 8 Tf 54 195 Td (  "decision": {) Tj ET
+BT /F4 8 Tf 54 184 Td (    "triggered": true,) Tj ET
+BT /F4 8 Tf 54 173 Td (    "code": "ALERT_TRIGGERED",) Tj ET
+BT /F4 8 Tf 54 162 Td (    "severity": "high",) Tj ET
+BT /F4 8 Tf 54 151 Td (    "message": "1 alert rule triggered for ORCL") Tj ET
+BT /F4 8 Tf 54 140 Td (  },) Tj ET
+BT /F4 8 Tf 54 129 Td (  "oic": {) Tj ET
+BT /F4 8 Tf 54 118 Td (    "switchBranch": "ALERT_TRIGGERED",) Tj ET
+BT /F4 8 Tf 54 107 Td (    "notificationRecommended": true,) Tj ET
+BT /F4 8 Tf 54 96 Td (    "retryRecommended": false,) Tj ET
+BT /F4 8 Tf 54 85 Td (    "trackingId": "300000123456789") Tj ET
+BT /F4 8 Tf 54 74 Td (  },) Tj ET
+Q
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 3354 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 4) Tj ET
+BT /F4 8 Tf 54 734 Td (  "diagnostics": {) Tj ET
+BT /F4 8 Tf 54 723 Td (    "providerMode": "mock",) Tj ET
+BT /F4 8 Tf 54 712 Td (    "elapsedMs": 48,) Tj ET
+BT /F4 8 Tf 54 701 Td (    "ruleCount": 1,) Tj ET
+BT /F4 8 Tf 54 690 Td (    "triggeredCount": 1) Tj ET
+BT /F4 8 Tf 54 679 Td (  }) Tj ET
+BT /F4 8 Tf 54 668 Td (}) Tj ET
+BT /F2 11 Tf 54 647 Td (5.2 Error Response) Tj ET
+BT /F4 8 Tf 54 624 Td ({) Tj ET
+BT /F4 8 Tf 54 613 Td (  "requestId": "oic-run-20260525-003",) Tj ET
+BT /F4 8 Tf 54 602 Td (  "status": "error",) Tj ET
+BT /F4 8 Tf 54 591 Td (  "symbol": "BAD SYMBOL",) Tj ET
+BT /F4 8 Tf 54 580 Td (  "error": {) Tj ET
+BT /F4 8 Tf 54 569 Td (    "code": "VALIDATION_ERROR",) Tj ET
+BT /F4 8 Tf 54 558 Td (    "message": "Request validation failed",) Tj ET
+BT /F4 8 Tf 54 547 Td (    "details": [) Tj ET
+BT /F4 8 Tf 54 536 Td (      {) Tj ET
+BT /F4 8 Tf 54 525 Td (        "field": "symbol",) Tj ET
+BT /F4 8 Tf 54 514 Td (        "issue": "Symbol must match pattern ^[A-Z][A-Z0-9.:-]{0,14}$") Tj ET
+BT /F4 8 Tf 54 503 Td (      }) Tj ET
+BT /F4 8 Tf 54 492 Td (    ]) Tj ET
+BT /F4 8 Tf 54 481 Td (  },) Tj ET
+BT /F4 8 Tf 54 470 Td (  "decision": {) Tj ET
+BT /F4 8 Tf 54 459 Td (    "triggered": false,) Tj ET
+BT /F4 8 Tf 54 448 Td (    "code": "INPUT_ERROR",) Tj ET
+BT /F4 8 Tf 54 437 Td (    "severity": "warning",) Tj ET
+BT /F4 8 Tf 54 426 Td (    "message": "Input could not be evaluated") Tj ET
+BT /F4 8 Tf 54 415 Td (  },) Tj ET
+BT /F4 8 Tf 54 404 Td (  "oic": {) Tj ET
+BT /F4 8 Tf 54 393 Td (    "switchBranch": "INPUT_ERROR",) Tj ET
+BT /F4 8 Tf 54 382 Td (    "notificationRecommended": false,) Tj ET
+BT /F4 8 Tf 54 371 Td (    "retryRecommended": false,) Tj ET
+BT /F4 8 Tf 54 360 Td (    "trackingId": "300000123456791") Tj ET
+BT /F4 8 Tf 54 349 Td (  }) Tj ET
+BT /F4 8 Tf 54 338 Td (}) Tj ET
+BT /F2 14 Tf 54 313 Td (6. Mapping Logic) Tj ET
+BT /F2 11 Tf 54 287 Td (6.1 Request Normalization) Tj ET
+BT /F4 8 Tf 54 264 Td (Source | Target | Logic) Tj ET
+BT /F4 8 Tf 54 253 Td (Body requestId | request.requestId | Use when supplied and valid.) Tj ET
+BT /F4 8 Tf 54 242 Td (Header X-Request-Id | request.requestId | Fallback when body value is absent.) Tj ET
+BT /F4 8 Tf 54 231 Td (Generated UUID | request.requestId | Fallback when body and header are absent.) Tj ET
+BT /F4 8 Tf 54 220 Td (Body symbol | request.symbol | Trim, uppercase, validate pattern.) Tj ET
+BT /F4 8 Tf 54 209 Td (Body currency | request.currency | Uppercase; if absent, use provider quote currency or) Tj ET
+BT /F4 8 Tf 54 198 Td (USD.) Tj ET
+BT /F4 8 Tf 54 187 Td (source.instanceId | oic.trackingId | Copy when present; otherwise use requestId.) Tj ET
+BT /F4 8 Tf 54 176 Td (options.providerMode | provider mode | Apply only when request override is enabled;) Tj ET
+BT /F4 8 Tf 54 165 Td (otherwise use runtime default.) Tj ET
+BT /F4 8 Tf 54 154 Td (Missing rules[].severity | normalized rule severity | Default to warning.) Tj ET
+BT /F4 8 Tf 54 143 Td (Missing rules[].message | normalized rule message | Default to empty string.) Tj ET
+BT /F2 11 Tf 54 126 Td (6.1.1 Alpha Vantage Outbound Request Mapping) Tj ET
+BT /F1 10 Tf 54 103 Td (Provider selection:) Tj ET
+BT /F4 8 Tf 54 83 Td (Setting | Required Value) Tj ET
+BT /F4 8 Tf 54 72 Td (QUOTE_PROVIDER_MODE | live) Tj ET
+Q
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 3574 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 5) Tj ET
+BT /F4 8 Tf 54 734 Td (QUOTE_PROVIDER_NAME | alpha_vantage) Tj ET
+BT /F4 8 Tf 54 723 Td (QUOTE_PROVIDER_API_KEY | Non-empty local or runtime secret) Tj ET
+BT /F1 10 Tf 54 706 Td (Outbound request:) Tj ET
+BT /F4 8 Tf 54 686 Td (GET https://www.alphavantage.co/query) Tj ET
+BT /F1 10 Tf 54 665 Td (Query parameters:) Tj ET
+BT /F4 8 Tf 54 645 Td (Parameter | Value) Tj ET
+BT /F4 8 Tf 54 634 Td (function | GLOBAL_QUOTE) Tj ET
+BT /F4 8 Tf 54 623 Td (symbol | Normalized request symbol) Tj ET
+BT /F4 8 Tf 54 612 Td (apikey | QUOTE_PROVIDER_API_KEY) Tj ET
+BT /F4 8 Tf 54 601 Td (datatype | Omitted; JSON is the default) Tj ET
+BT /F4 8 Tf 54 590 Td (entitlement | Omitted for MVP) Tj ET
+BT /F1 10 Tf 54 573 Td (Timeout:) Tj ET
+BT /F1 10 Tf 54 553 Td (- Use QUOTE_PROVIDER_TIMEOUT_MS.) Tj ET
+BT /F1 10 Tf 54 539 Td (- Default: 1500.) Tj ET
+BT /F1 10 Tf 54 525 Td (- Timeout maps to PROVIDER_TIMEOUT.) Tj ET
+BT /F1 10 Tf 54 505 Td (Freshness:) Tj ET
+BT /F1 10 Tf 54 485 Td (- Alpha Vantage quote freshness depends on API entitlement.) Tj ET
+BT /F1 10 Tf 54 471 Td (- Realtime or 15-minute delayed data is outside the default MVP guarantee.) Tj ET
+BT /F2 11 Tf 54 451 Td (6.1.2 Alpha Vantage Response Normalization) Tj ET
+BT /F4 8 Tf 54 428 Td (Alpha Vantage Field | Internal Field | Conversion) Tj ET
+BT /F4 8 Tf 54 417 Td (01. symbol | symbol | String.) Tj ET
+BT /F4 8 Tf 54 406 Td (03. high | dayHigh | Decimal string to number.) Tj ET
+BT /F4 8 Tf 54 395 Td (04. low | dayLow | Decimal string to number.) Tj ET
+BT /F4 8 Tf 54 384 Td (05. price | lastPrice | Decimal string to number.) Tj ET
+BT /F4 8 Tf 54 373 Td (06. volume | volume | Integer string to integer.) Tj ET
+BT /F4 8 Tf 54 362 Td (07. latest trading day | asOf | Date string to UTC date-like timestamp.) Tj ET
+BT /F4 8 Tf 54 351 Td (09. change | change | Decimal string to number.) Tj ET
+BT /F4 8 Tf 54 340 Td (10. change percent | changePercent | Strip %, then decimal string to number.) Tj ET
+BT /F4 8 Tf 54 329 Td (constant | currency | USD for MVP.) Tj ET
+BT /F4 8 Tf 54 318 Td (constant | provider | alpha_vantage.) Tj ET
+BT /F2 11 Tf 54 301 Td (6.2 Rule Evaluation) Tj ET
+BT /F4 8 Tf 54 278 Td (Operator | Trigger Logic) Tj ET
+BT /F4 8 Tf 54 267 Td (gt | actualValue > threshold) Tj ET
+BT /F4 8 Tf 54 256 Td (gte | actualValue >= threshold) Tj ET
+BT /F4 8 Tf 54 245 Td (lt | actualValue < threshold) Tj ET
+BT /F4 8 Tf 54 234 Td (lte | actualValue <= threshold) Tj ET
+BT /F4 8 Tf 54 223 Td (eq | actualValue == threshold after numeric normalization) Tj ET
+BT /F4 8 Tf 54 212 Td (absGte | abs\(actualValue\) >= threshold) Tj ET
+BT /F1 10 Tf 54 195 Td (The evaluator reads the requested metric from the quote. If the metric is missing from a) Tj ET
+BT /F1 10 Tf 54 181 Td (quote that should contain it, the provider path is mapped to a quote-unavailable style) Tj ET
+BT /F1 10 Tf 54 167 Td (error.) Tj ET
+BT /F2 11 Tf 54 147 Td (6.3 Aggregate Decision) Tj ET
+BT /F4 8 Tf 54 124 Td (Condition | Decision Code | Triggered | Severity | Switch Branch | Retry) Tj ET
+BT /F4 8 Tf 54 113 Td (One or more rules triggered | ALERT_TRIGGERED | true | Highest triggered severity |) Tj ET
+BT /F4 8 Tf 54 102 Td (ALERT_TRIGGERED | false) Tj ET
+BT /F4 8 Tf 54 91 Td (No rules triggered | NO_ALERT | false | info | NO_ALERT | false) Tj ET
+BT /F4 8 Tf 54 80 Td (Validation failure | INPUT_ERROR | false | warning | INPUT_ERROR | false) Tj ET
+BT /F4 8 Tf 54 69 Td (Unsupported rule | INPUT_ERROR | false | warning | INPUT_ERROR | false) Tj ET
+Q
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 3745 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 6) Tj ET
+BT /F4 8 Tf 54 734 Td (Quote not found | QUOTE_UNAVAILABLE | false | warning | QUOTE_UNAVAILABLE | false) Tj ET
+BT /F4 8 Tf 54 723 Td (Provider timeout | PROVIDER_TIMEOUT | false | warning | PROVIDER_TIMEOUT | true) Tj ET
+BT /F4 8 Tf 54 712 Td (Unexpected exception | SYSTEM_ERROR | false | critical | SYSTEM_ERROR | true) Tj ET
+BT /F4 8 Tf 54 701 Td (Alpha Vantage empty quote | QUOTE_UNAVAILABLE | false | warning | QUOTE_UNAVAILABLE |) Tj ET
+BT /F4 8 Tf 54 690 Td (false) Tj ET
+BT /F4 8 Tf 54 679 Td (Alpha Vantage rate-limit note | QUOTE_UNAVAILABLE | false | warning | QUOTE_UNAVAILABLE) Tj ET
+BT /F4 8 Tf 54 668 Td (| OIC policy) Tj ET
+BT /F4 8 Tf 54 657 Td (Alpha Vantage invalid-key information | QUOTE_UNAVAILABLE | false | warning |) Tj ET
+BT /F4 8 Tf 54 646 Td (QUOTE_UNAVAILABLE | false) Tj ET
+BT /F1 10 Tf 54 629 Td (Severity precedence:) Tj ET
+BT /F4 8 Tf 54 609 Td (critical > high > warning > info) Tj ET
+BT /F2 14 Tf 54 584 Td (7. OIC Switch Branch Structures) Tj ET
+BT /F1 10 Tf 54 558 Td (Primary expression:) Tj ET
+BT /F4 8 Tf 54 538 Td (response.oic.switchBranch) Tj ET
+BT /F1 10 Tf 54 517 Td (Optional assigned variable:) Tj ET
+BT /F4 8 Tf 54 497 Td (stockAlertSwitchBranch = response.oic.switchBranch) Tj ET
+BT /F1 10 Tf 54 476 Td (Branches:) Tj ET
+BT /F4 8 Tf 54 456 Td (Branch | Match Value | Retry | Notification | Purpose) Tj ET
+BT /F4 8 Tf 54 445 Td (Alert Triggered | ALERT_TRIGGERED | No | Yes | Build and send alert notification.) Tj ET
+BT /F4 8 Tf 54 434 Td (No Alert | NO_ALERT | No | No | Log no-op and end successfully.) Tj ET
+BT /F4 8 Tf 54 423 Td (Input Error | INPUT_ERROR | No | No | Record invalid inbound payload or unsupported) Tj ET
+BT /F4 8 Tf 54 412 Td (rule.) Tj ET
+BT /F4 8 Tf 54 401 Td (Quote Unavailable | QUOTE_UNAVAILABLE | Usually no | No | Record business exception for) Tj ET
+BT /F4 8 Tf 54 390 Td (missing market data.) Tj ET
+BT /F4 8 Tf 54 379 Td (Provider Timeout | PROVIDER_TIMEOUT | Yes | No | Route to retry or recoverable fault) Tj ET
+BT /F4 8 Tf 54 368 Td (handling.) Tj ET
+BT /F4 8 Tf 54 357 Td (System Error | SYSTEM_ERROR | Yes | No | Route to technical fault handling and) Tj ET
+BT /F4 8 Tf 54 346 Td (operations logging.) Tj ET
+BT /F4 8 Tf 54 335 Td (Otherwise | unmatched | No | No | Treat as technical fault and preserve diagnostics.) Tj ET
+BT /F1 10 Tf 54 318 Td (Alert notification mapping:) Tj ET
+BT /F4 8 Tf 54 298 Td (Target Field | Source) Tj ET
+BT /F4 8 Tf 54 287 Td (subject | concat\(response.symbol, " stock alert: ", response.decision.severity\)) Tj ET
+BT /F4 8 Tf 54 276 Td (body | response.decision.message plus triggered rule messages and quote values) Tj ET
+BT /F4 8 Tf 54 265 Td (symbol | response.symbol) Tj ET
+BT /F4 8 Tf 54 254 Td (price | response.quote.lastPrice) Tj ET
+BT /F4 8 Tf 54 243 Td (currency | response.quote.currency) Tj ET
+BT /F4 8 Tf 54 232 Td (triggeredRules | Filter response.rules where triggered = true) Tj ET
+BT /F4 8 Tf 54 221 Td (trackingId | response.oic.trackingId) Tj ET
+BT /F4 8 Tf 54 210 Td (requestId | response.requestId) Tj ET
+BT /F1 10 Tf 54 193 Td (Error logging mapping:) Tj ET
+BT /F4 8 Tf 54 173 Td (Branch | Primary Fields) Tj ET
+BT /F4 8 Tf 54 162 Td (INPUT_ERROR | requestId, symbol, error.code, error.details) Tj ET
+BT /F4 8 Tf 54 151 Td (QUOTE_UNAVAILABLE | requestId, symbol, error.code, error.message) Tj ET
+BT /F4 8 Tf 54 140 Td (PROVIDER_TIMEOUT | requestId, symbol, error.code, oic.retryRecommended) Tj ET
+BT /F4 8 Tf 54 129 Td (SYSTEM_ERROR | requestId, symbol, error.code, error.message) Tj ET
+BT /F2 14 Tf 54 108 Td (8. Module-Level Design) Tj ET
+BT /F4 8 Tf 54 82 Td (Module | Key Functions or Types | Behavior) Tj ET
+Q
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Length 4541 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 7) Tj ET
+BT /F4 8 Tf 54 734 Td (config.py | Settings, settings loader | Reads environment defaults for port, provider,) Tj ET
+BT /F4 8 Tf 54 723 Td (timeout, and override behavior.) Tj ET
+BT /F4 8 Tf 54 712 Td (validation.py | request validation and normalization | Enforces JSON shape, symbols,) Tj ET
+BT /F4 8 Tf 54 701 Td (rule count, unique IDs, metrics, operators, thresholds, severity, and options.) Tj ET
+BT /F4 8 Tf 54 690 Td (quote_provider.py | mock quote provider | Returns deterministic quote data and provider) Tj ET
+BT /F4 8 Tf 54 679 Td (error fixtures for contract tests.) Tj ET
+BT /F4 8 Tf 54 668 Td (alpha_vantage_provider.py | Alpha Vantage REST client | Calls GLOBAL_QUOTE, applies) Tj ET
+BT /F4 8 Tf 54 657 Td (timeout, normalizes response, and maps provider errors.) Tj ET
+BT /F4 8 Tf 54 646 Td (env_loader.py | local .env parser | Loads untracked local settings without shell) Tj ET
+BT /F4 8 Tf 54 635 Td (execution or secret logging.) Tj ET
+BT /F4 8 Tf 54 624 Td (evaluator.py | evaluate_rules, build_decision | Applies rule operators and derives) Tj ET
+BT /F4 8 Tf 54 613 Td (aggregate decision code, severity, and message.) Tj ET
+BT /F4 8 Tf 54 602 Td (mapper.py | build_success_response, build_error_response | Builds OIC-friendly response) Tj ET
+BT /F4 8 Tf 54 591 Td (payloads with decision and branch fields.) Tj ET
+BT /F4 8 Tf 54 580 Td (errors.py | stock alert exception classes | Converts validation, provider, timeout, and) Tj ET
+BT /F4 8 Tf 54 569 Td (system conditions into stable error metadata.) Tj ET
+BT /F4 8 Tf 54 558 Td (app.py | application service | Coordinates validation, provider lookup, evaluation,) Tj ET
+BT /F4 8 Tf 54 547 Td (mapping, and error handling.) Tj ET
+BT /F4 8 Tf 54 536 Td (server.py | HTTP handler | Parses requests, routes endpoints, serializes JSON responses,) Tj ET
+BT /F4 8 Tf 54 525 Td (and emits status codes.) Tj ET
+BT /F2 14 Tf 54 504 Td (9. Error Contract) Tj ET
+BT /F4 8 Tf 54 478 Td (Error Code | HTTP Status | Decision Code | Switch Branch | Retry) Tj ET
+BT /F4 8 Tf 54 467 Td (VALIDATION_ERROR | 400 | INPUT_ERROR | INPUT_ERROR | No) Tj ET
+BT /F4 8 Tf 54 456 Td (UNSUPPORTED_RULE | 422 | INPUT_ERROR | INPUT_ERROR | No) Tj ET
+BT /F4 8 Tf 54 445 Td (QUOTE_NOT_FOUND | 502 | QUOTE_UNAVAILABLE | QUOTE_UNAVAILABLE | No) Tj ET
+BT /F4 8 Tf 54 434 Td (PROVIDER_ERROR | 502 | QUOTE_UNAVAILABLE | QUOTE_UNAVAILABLE | Maybe by OIC policy) Tj ET
+BT /F4 8 Tf 54 423 Td (PROVIDER_TIMEOUT | 504 | PROVIDER_TIMEOUT | PROVIDER_TIMEOUT | Yes) Tj ET
+BT /F4 8 Tf 54 412 Td (SYSTEM_ERROR | 500 | SYSTEM_ERROR | SYSTEM_ERROR | Yes) Tj ET
+BT /F1 10 Tf 54 395 Td (Alpha Vantage provider mapping:) Tj ET
+BT /F4 8 Tf 54 375 Td (Upstream Payload or Condition | Error Code | Switch Branch | Notes) Tj ET
+BT /F4 8 Tf 54 364 Td (Empty Global Quote object | QUOTE_NOT_FOUND | QUOTE_UNAVAILABLE | Covers invalid or) Tj ET
+BT /F4 8 Tf 54 353 Td (unsupported symbol payloads.) Tj ET
+BT /F4 8 Tf 54 342 Td (Note message | PROVIDER_ERROR | QUOTE_UNAVAILABLE | Covers provider rate-limit messages.) Tj ET
+BT /F4 8 Tf 54 331 Td (Information message | PROVIDER_ERROR | QUOTE_UNAVAILABLE | Covers invalid key or) Tj ET
+BT /F4 8 Tf 54 320 Td (entitlement-style messages.) Tj ET
+BT /F4 8 Tf 54 309 Td (Outbound timeout | PROVIDER_TIMEOUT | PROVIDER_TIMEOUT | Must set) Tj ET
+BT /F4 8 Tf 54 298 Td (oic.retryRecommended=true.) Tj ET
+BT /F4 8 Tf 54 287 Td (Malformed JSON | PROVIDER_ERROR | QUOTE_UNAVAILABLE | Do not expose raw provider payload) Tj ET
+BT /F4 8 Tf 54 276 Td (if it might include secrets.) Tj ET
+BT /F4 8 Tf 54 265 Td (Unexpected client exception | SYSTEM_ERROR | SYSTEM_ERROR | Log sanitized exception) Tj ET
+BT /F4 8 Tf 54 254 Td (category only.) Tj ET
+BT /F2 14 Tf 54 233 Td (10. Validation Rules) Tj ET
+BT /F1 10 Tf 54 207 Td (- Reject malformed JSON.) Tj ET
+BT /F1 10 Tf 54 193 Td (- Reject oversized JSON bodies beyond the service limit.) Tj ET
+BT /F1 10 Tf 54 179 Td (- Require symbol.) Tj ET
+BT /F1 10 Tf 54 165 Td (- Require one to ten rules.) Tj ET
+BT /F1 10 Tf 54 151 Td (- Reject duplicate ruleId values.) Tj ET
+BT /F1 10 Tf 54 137 Td (- Reject unknown metrics.) Tj ET
+BT /F1 10 Tf 54 123 Td (- Reject unknown operators.) Tj ET
+BT /F1 10 Tf 54 109 Td (- Reject missing or non-numeric thresholds.) Tj ET
+BT /F1 10 Tf 54 95 Td (- Reject negative thresholds except where supported for changePercent.) Tj ET
+BT /F1 10 Tf 54 81 Td (- Validate severity against info, warning, high, and critical.) Tj ET
+Q
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 17 0 R >>
+endobj
+19 0 obj
+<< /Length 4209 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 8) Tj ET
+BT /F1 10 Tf 54 734 Td (- Default missing severity to warning.) Tj ET
+BT /F1 10 Tf 54 720 Td (- Exclude diagnostics unless options.includeDiagnostics is true.) Tj ET
+BT /F1 10 Tf 54 706 Td (- Reject live mode when QUOTE_PROVIDER_API_KEY is missing or blank.) Tj ET
+BT /F1 10 Tf 54 692 Td (- Reject unsupported live provider names.) Tj ET
+BT /F1 10 Tf 54 678 Td (- Never include QUOTE_PROVIDER_API_KEY in error details.) Tj ET
+BT /F2 14 Tf 54 654 Td (11. Test Cases) Tj ET
+BT /F2 11 Tf 54 628 Td (11.1 Unit Tests) Tj ET
+BT /F4 8 Tf 54 605 Td (Test | Expected Result) Tj ET
+BT /F4 8 Tf 54 594 Td (lastPrice gte threshold with actual above threshold | Rule triggered.) Tj ET
+BT /F4 8 Tf 54 583 Td (lastPrice lt threshold with actual above threshold | Rule not triggered.) Tj ET
+BT /F4 8 Tf 54 572 Td (changePercent absGte threshold with negative actual beyond threshold | Rule triggered.) Tj ET
+BT /F4 8 Tf 54 561 Td (Multiple triggered rules with different severities | Aggregate severity is highest) Tj ET
+BT /F4 8 Tf 54 550 Td (severity.) Tj ET
+BT /F4 8 Tf 54 539 Td (No triggered rules | decision.code = NO_ALERT.) Tj ET
+BT /F4 8 Tf 54 528 Td (Duplicate ruleId values | Validation error.) Tj ET
+BT /F4 8 Tf 54 517 Td (Unsupported metric | Input error path.) Tj ET
+BT /F4 8 Tf 54 506 Td (.env parser ignores comments and blank lines | Settings load successfully.) Tj ET
+BT /F4 8 Tf 54 495 Td (Process environment overrides .env | Effective runtime setting comes from process) Tj ET
+BT /F4 8 Tf 54 484 Td (environment.) Tj ET
+BT /F4 8 Tf 54 473 Td (Missing Alpha Vantage API key in live mode | Provider error without secret leakage.) Tj ET
+BT /F4 8 Tf 54 462 Td (Alpha Vantage Global Quote fixture | Normalized quote has numeric lastPrice, dayHigh,) Tj ET
+BT /F4 8 Tf 54 451 Td (dayLow, change, changePercent, and integer volume.) Tj ET
+BT /F4 8 Tf 54 440 Td (Alpha Vantage rate-limit Note fixture | QUOTE_UNAVAILABLE branch.) Tj ET
+BT /F4 8 Tf 54 429 Td (Alpha Vantage invalid-key Information fixture | QUOTE_UNAVAILABLE branch.) Tj ET
+BT /F4 8 Tf 54 418 Td (Alpha Vantage timeout | PROVIDER_TIMEOUT branch and retry recommended.) Tj ET
+BT /F4 8 Tf 54 407 Td (Secret redaction | API key absent from logs, diagnostics, response body, and assertion) Tj ET
+BT /F4 8 Tf 54 396 Td (output.) Tj ET
+BT /F2 11 Tf 54 379 Td (11.2 API Contract Tests) Tj ET
+BT /F4 8 Tf 54 356 Td (Scenario | Expected Result) Tj ET
+BT /F4 8 Tf 54 345 Td (GET /health | 200 with service metadata.) Tj ET
+BT /F4 8 Tf 54 334 Td (Valid alert-triggered request | 200, decision.code = ALERT_TRIGGERED, oic.switchBranch =) Tj ET
+BT /F4 8 Tf 54 323 Td (ALERT_TRIGGERED.) Tj ET
+BT /F4 8 Tf 54 312 Td (Valid no-alert request | 200, decision.code = NO_ALERT, oic.switchBranch = NO_ALERT.) Tj ET
+BT /F4 8 Tf 54 301 Td (Invalid symbol | 400, error.code = VALIDATION_ERROR, oic.switchBranch = INPUT_ERROR.) Tj ET
+BT /F4 8 Tf 54 290 Td (Mock provider quote missing | 502, oic.switchBranch = QUOTE_UNAVAILABLE.) Tj ET
+BT /F4 8 Tf 54 279 Td (Simulated provider timeout | 504, oic.switchBranch = PROVIDER_TIMEOUT, retryRecommended) Tj ET
+BT /F4 8 Tf 54 268 Td (= true.) Tj ET
+BT /F4 8 Tf 54 257 Td (Live Alpha Vantage fixture alert-triggered | 200, provider alpha_vantage, expected) Tj ET
+BT /F4 8 Tf 54 246 Td (branch from evaluated quote.) Tj ET
+BT /F4 8 Tf 54 235 Td (Live Alpha Vantage invalid symbol fixture | 502, oic.switchBranch = QUOTE_UNAVAILABLE.) Tj ET
+BT /F2 11 Tf 54 218 Td (11.3 Artifact Tests) Tj ET
+BT /F4 8 Tf 54 195 Td (Artifact | Expected Result) Tj ET
+BT /F4 8 Tf 54 184 Td (OpenAPI JSON | Valid JSON and includes /v1/alerts/evaluate.) Tj ET
+BT /F4 8 Tf 54 173 Td (Request schema | Valid JSON and requires symbol and rules.) Tj ET
+BT /F4 8 Tf 54 162 Td (Response schema | Valid JSON and defines success and error response alternatives.) Tj ET
+BT /F4 8 Tf 54 151 Td (Sample payloads | Valid JSON and aligned with branch expectations.) Tj ET
+BT /F4 8 Tf 54 140 Td (OIC switch guide | Documents all branch values.) Tj ET
+BT /F2 11 Tf 54 123 Td (11.4 Verification Command) Tj ET
+BT /F4 8 Tf 54 100 Td (python3 -m unittest discover -s tests) Tj ET
+Q
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 19 0 R >>
+endobj
+21 0 obj
+<< /Length 2387 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert LLD) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 9) Tj ET
+BT /F2 14 Tf 54 730 Td (12. Implementation Sequence) Tj ET
+BT /F1 10 Tf 54 704 Td (1. Load runtime settings.) Tj ET
+BT /F1 10 Tf 54 690 Td (2. Parse HTTP request and JSON body.) Tj ET
+BT /F1 10 Tf 54 676 Td (3. Normalize and validate request.) Tj ET
+BT /F1 10 Tf 54 662 Td (4. Load .env and process environment into settings.) Tj ET
+BT /F1 10 Tf 54 648 Td (5. Select provider mode.) Tj ET
+BT /F1 10 Tf 54 634 Td (6. If live Alpha Vantage mode is selected, require API key and call GLOBAL_QUOTE.) Tj ET
+BT /F1 10 Tf 54 620 Td (7. Normalize provider quote into internal shape.) Tj ET
+BT /F1 10 Tf 54 606 Td (8. Evaluate rules.) Tj ET
+BT /F1 10 Tf 54 592 Td (9. Build aggregate decision.) Tj ET
+BT /F1 10 Tf 54 578 Td (10. Map success or error response.) Tj ET
+BT /F1 10 Tf 54 564 Td (11. Return HTTP status and JSON response.) Tj ET
+BT /F1 10 Tf 54 550 Td (12. Let OIC branch on response.oic.switchBranch.) Tj ET
+BT /F2 14 Tf 54 526 Td (13. LLD Decisions) Tj ET
+BT /F4 8 Tf 54 500 Td (Decision | Rationale) Tj ET
+BT /F4 8 Tf 54 489 Td (Keep decision.code equal to success oic.switchBranch | Prevents branch mismatch for) Tj ET
+BT /F4 8 Tf 54 478 Td (successful evaluations.) Tj ET
+BT /F4 8 Tf 54 467 Td (Always include oic routing object | OIC can branch consistently on success and error) Tj ET
+BT /F4 8 Tf 54 456 Td (responses.) Tj ET
+BT /F4 8 Tf 54 445 Td (Keep diagnostics optional | Reduces payload noise while preserving troubleshooting) Tj ET
+BT /F4 8 Tf 54 434 Td (support.) Tj ET
+BT /F4 8 Tf 54 423 Td (Preserve requestId in all responses | Enables retry correlation and support) Tj ET
+BT /F4 8 Tf 54 412 Td (investigation.) Tj ET
+BT /F4 8 Tf 54 401 Td (Use explicit switch branch enum | Avoids brittle text matching in OIC.) Tj ET
+BT /F4 8 Tf 54 390 Td (Keep Alpha Vantage behind provider interface | Live market data changes do not alter) Tj ET
+BT /F4 8 Tf 54 379 Td (OIC-facing API contracts.) Tj ET
+BT /F4 8 Tf 54 368 Td (Use .env only as local secret input | Prevents accidental API-key commits while) Tj ET
+BT /F4 8 Tf 54 357 Td (preserving deployed environment-variable configuration.) Tj ET
+BT /F4 8 Tf 54 346 Td (Omit Alpha Vantage entitlement for MVP | Keeps first live integration small; realtime) Tj ET
+BT /F4 8 Tf 54 335 Td (and delayed entitlement can be added later.) Tj ET
+Q
+endstream
+endobj
+22 0 obj
+<< /Type /Page /Parent 23 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 21 0 R >>
+endobj
+23 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R 22 0 R] /Count 9 >>
+endobj
+24 0 obj
+<< /Type /Catalog /Pages 23 0 R >>
+endobj
+xref
+0 25
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000154 00000 n 
+0000000232 00000 n 
+0000000300 00000 n 
+0000003419 00000 n 
+0000003576 00000 n 
+0000007308 00000 n 
+0000007465 00000 n 
+0000010727 00000 n 
+0000010885 00000 n 
+0000014291 00000 n 
+0000014450 00000 n 
+0000018076 00000 n 
+0000018235 00000 n 
+0000022032 00000 n 
+0000022191 00000 n 
+0000026784 00000 n 
+0000026943 00000 n 
+0000031204 00000 n 
+0000031363 00000 n 
+0000033802 00000 n 
+0000033961 00000 n 
+0000034074 00000 n 
+trailer
+<< /Size 25 /Root 24 0 R >>
+startxref
+34125
+%%EOF

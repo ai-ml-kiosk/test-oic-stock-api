@@ -1,15 +1,15 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-25T07:08:19.871Z",
+  "lastUpdated": "2026-05-25T23:55:46.300Z",
   "activeFeatures": [
     "oic-stock-alert"
   ],
   "primaryFeature": "oic-stock-alert",
   "features": {
     "oic-stock-alert": {
-      "phase": "completed",
-      "matchRate": 95,
-      "iterationCount": 1,
+      "phase": "report",
+      "matchRate": 96,
+      "iterationCount": 2,
       "documents": {},
       "taskChain": [
         {
@@ -45,7 +45,7 @@
       ],
       "timestamps": {
         "started": "2026-05-25T05:11:06.258Z",
-        "lastUpdated": "2026-05-25T07:08:19.871Z"
+        "lastUpdated": "2026-05-25T23:55:46.300Z"
       },
       "completedAt": "2026-05-25T07:08:19.868Z"
     }
@@ -58,7 +58,7 @@
   "session": {
     "startedAt": "2026-05-25T05:11:06.249Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-25T07:08:19.871Z"
+    "lastActivity": "2026-05-25T23:55:46.300Z"
   },
   "history": [
     {
@@ -125,6 +125,51 @@
       "phase": "report",
       "nextPhase": "completed",
       "timestamp": "2026-05-25T07:08:19.870Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "from": "completed",
+      "to": "design",
+      "timestamp": "2026-05-25T23:44:44.175Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "from": "design",
+      "to": "do",
+      "timestamp": "2026-05-25T23:46:39.656Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "action": "phase_complete",
+      "phase": "design",
+      "nextPhase": "do",
+      "timestamp": "2026-05-25T23:46:39.658Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "from": "do",
+      "to": "check",
+      "timestamp": "2026-05-25T23:51:02.996Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "action": "phase_complete",
+      "phase": "do",
+      "nextPhase": "check",
+      "timestamp": "2026-05-25T23:51:02.997Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "from": "check",
+      "to": "report",
+      "timestamp": "2026-05-25T23:55:28.506Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "action": "phase_complete",
+      "phase": "check",
+      "nextPhase": "report",
+      "timestamp": "2026-05-25T23:55:28.512Z"
     }
   ]
 }

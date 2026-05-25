@@ -45,10 +45,11 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Define an HTTP API for OIC-friendly stock alert operations.
 - Support stock symbols, threshold direction, threshold price, and alert status.
 - Retrieve quote data from a configurable provider or mock provider for local development.
+- Add an MVP milestone for live market data orchestration through an outbound REST quote provider while maintaining the local mock provider path as a runtime toggle.
 - Evaluate alert rules for conditions such as price above, price below, and percentage change.
 - Return structured JSON responses that include quote data, alert match status, and error details.
 - Provide health and readiness endpoints.
-- Include configuration for provider API keys through environment variables.
+- Include configuration for provider API keys through environment variables and untracked local `.env` files.
 - Provide local developer setup and verification instructions.
 - Define basic tests for rule evaluation and API response contracts.
 
@@ -73,18 +74,20 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 | FR-006 | The API must handle invalid symbols, invalid thresholds, provider failures, and timeouts with explicit error responses. | Must |
 | FR-007 | The API should support a mock quote provider for local and CI verification. | Should |
 | FR-008 | The API should expose enough metadata for OIC troubleshooting, such as request ID and provider mode. | Should |
+| FR-009 | The API must support decoupled, zero-trust credential parsing through an untracked local `.env` file for sensitive provider settings. | Must |
+| FR-010 | The API must support outbound connection mapping to Alpha Vantage's `GLOBAL_QUOTE` endpoint for live quote retrieval. | Must |
 
 ## 5. Non-Functional Requirements
 
 | Category | Requirement |
 |----------|-------------|
 | Reliability | Quote provider failures must fail gracefully with clear status codes and messages. |
-| Security | Secrets must be read from environment variables and never committed. |
+| Security | Secrets must be read from environment variables or untracked local `.env` files and never committed. |
 | Observability | Requests, provider calls, and alert decisions should be logged without exposing secrets. |
-| Performance | A single alert evaluation should complete within 2 seconds in normal provider conditions. |
+| Performance | A single alert evaluation should complete within 2 seconds in normal provider conditions, and live mode must adhere to configured timeout limits with a default of 1500 ms. |
 | Testability | Rule evaluation must be testable without external network calls. |
 | Maintainability | Provider access, alert rules, and API routes should be separated enough to keep future changes small. |
-| Integration | Responses should use stable JSON fields and predictable HTTP status codes for OIC mappings. |
+| Integration | Responses should use stable JSON fields and predictable HTTP status codes for OIC mappings; upstream Alpha Vantage rate-limit and invalid-symbol payloads must map cleanly into downstream OIC exception branches. |
 
 ## 6. Success Criteria
 
@@ -122,9 +125,19 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Keep the MVP stateless unless persistence is confirmed during design.
 - Separate API handlers from alert evaluation logic.
 - Define a quote provider interface with mock and live implementations.
+- Route Alpha Vantage `GLOBAL_QUOTE` payloads through the live provider path without changing the OIC-facing response contract.
 - Prefer JSON contracts that are easy for OIC integrations to map.
-- Use environment-based configuration for provider mode, API keys, timeout, and log level.
+- Use environment-based and untracked `.env` configuration for provider mode, API keys, timeout, and log level.
+- Enforce the configured live provider timeout, defaulting to 1500 ms, and map upstream rate-limit, invalid-symbol, timeout, and provider-error outcomes into existing OIC exception branches.
 - Include request IDs in logs and responses to support OIC troubleshooting.
+
+## 9.1 Deliverables Checklist
+
+- [x] MVP plan document
+- [x] Mock quote provider path
+- [x] OIC-friendly response contract
+- [ ] `.env.example` template
+- [ ] Alpha Vantage live provider module logic
 
 ## 10. Convention Prerequisites
 

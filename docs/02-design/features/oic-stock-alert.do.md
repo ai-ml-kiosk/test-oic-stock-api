@@ -1,6 +1,6 @@
 # oic-stock-alert - Do Phase Implementation Notes
 
-> Version: 1.0.0 | Date: 2026-05-25 | Status: Complete
+> Version: 1.1.0 | Date: 2026-05-26 | Status: Complete
 > Design: `docs/02-design/features/oic-stock-alert.design.md`
 
 ---
@@ -8,6 +8,8 @@
 ## Summary
 
 Implemented the OIC Stock Alert MVP as a dependency-free Python HTTP API. The implementation follows the approved design contract for JSON payloads, mapping logic, error handling, and OIC Switch branch routing.
+
+This Do phase now includes the Alpha Vantage live provider extension and zero-trust local `.env` configuration layer added to the design on 2026-05-26.
 
 Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
 
@@ -22,6 +24,14 @@ Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
   - `MISSING` -> quote unavailable.
   - `TIMEOUT` -> provider timeout.
   - `ERROR` -> provider error.
+- Alpha Vantage live provider path:
+  - `QUOTE_PROVIDER_MODE=live`
+  - `QUOTE_PROVIDER_NAME=alpha_vantage`
+  - `GLOBAL_QUOTE` outbound request mapping.
+  - Alpha Vantage response normalization into the internal `Quote` model.
+  - Upstream `Note`, `Information`, empty quote, malformed payload, and timeout mapping.
+- Local `.env` configuration parser for untracked development secrets.
+- `.env.example` placeholder template with no real credentials.
 - Rule evaluation for `gt`, `gte`, `lt`, `lte`, `eq`, and `absGte`.
 - Aggregate decision mapping for `ALERT_TRIGGERED` and `NO_ALERT`.
 - Error mapping for `INPUT_ERROR`, `QUOTE_UNAVAILABLE`, `PROVIDER_TIMEOUT`, and `SYSTEM_ERROR`.
@@ -42,15 +52,20 @@ Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
 | File | Purpose |
 |------|---------|
 | `oic_stock_alert/config.py` | Runtime environment configuration. |
+| `oic_stock_alert/env_loader.py` | Local `.env` parser and environment-default loader. |
 | `oic_stock_alert/errors.py` | Application error classes and branch metadata. |
 | `oic_stock_alert/validation.py` | Request validation and normalization. |
 | `oic_stock_alert/quote_provider.py` | Quote provider abstraction and mock provider. |
+| `oic_stock_alert/alpha_vantage_provider.py` | Alpha Vantage `GLOBAL_QUOTE` client and normalizer. |
 | `oic_stock_alert/evaluator.py` | Rule evaluation and aggregate decision logic. |
 | `oic_stock_alert/mapper.py` | Success/error response mapping. |
 | `oic_stock_alert/app.py` | Application service layer. |
 | `oic_stock_alert/server.py` | Standard-library HTTP server. |
 | `tests/test_evaluator.py` | Unit tests for evaluator and validation behavior. |
 | `tests/test_api_contract.py` | HTTP contract tests for API and OIC branch responses. |
+| `tests/test_env_loader.py` | Unit tests for `.env` parsing and environment precedence. |
+| `tests/test_alpha_vantage_provider.py` | Unit tests for Alpha Vantage normalization and provider errors. |
+| `.env.example` | Non-secret local live-provider configuration template. |
 | `artifacts/openapi/oic-stock-alert.openapi.json` | OpenAPI contract artifact. |
 | `artifacts/json-schema/alert-evaluation-request.schema.json` | Request schema artifact. |
 | `artifacts/json-schema/alert-evaluation-response.schema.json` | Response schema artifact. |
@@ -85,6 +100,10 @@ This Do phase is ready for initial commit and push with the implementation, test
 | Evaluation endpoint | `StockAlertHandler.do_POST`, `StockAlertApp.evaluate` |
 | Request schema | `validate_request` |
 | Mock provider | `get_quote`, `_mock_quote` |
+| `.env` credential parsing | `load_env_file`, `apply_env_defaults`, `load_settings` |
+| Alpha Vantage live provider | `get_alpha_vantage_quote`, `normalize_global_quote`, `get_quote` |
+| Provider timeout mapping | `ProviderTimeoutError`, Alpha Vantage timeout handling |
+| Provider rate-limit / invalid-key mapping | Alpha Vantage `Note` and `Information` handling |
 | Rule evaluation | `evaluate_rules`, `build_decision` |
 | Success response mapping | `build_success_response` |
 | Error response mapping | `build_error_response` |
