@@ -1,13 +1,13 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-25T07:01:58.249Z",
+  "lastUpdated": "2026-05-25T07:08:19.871Z",
   "activeFeatures": [
     "oic-stock-alert"
   ],
   "primaryFeature": "oic-stock-alert",
   "features": {
     "oic-stock-alert": {
-      "phase": "report",
+      "phase": "completed",
       "matchRate": 95,
       "iterationCount": 1,
       "documents": {},
@@ -38,14 +38,16 @@
         },
         {
           "phase": "report",
-          "status": "active",
-          "createdAt": "2026-05-25T05:11:06.255Z"
+          "status": "completed",
+          "createdAt": "2026-05-25T05:11:06.255Z",
+          "completedAt": "2026-05-25T07:08:19.871Z"
         }
       ],
       "timestamps": {
         "started": "2026-05-25T05:11:06.258Z",
-        "lastUpdated": "2026-05-25T07:01:58.248Z"
-      }
+        "lastUpdated": "2026-05-25T07:08:19.871Z"
+      },
+      "completedAt": "2026-05-25T07:08:19.868Z"
     }
   },
   "pipeline": {
@@ -56,7 +58,7 @@
   "session": {
     "startedAt": "2026-05-25T05:11:06.249Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-25T07:01:58.249Z"
+    "lastActivity": "2026-05-25T07:08:19.871Z"
   },
   "history": [
     {
@@ -116,6 +118,13 @@
       "phase": "check",
       "nextPhase": "report",
       "timestamp": "2026-05-25T07:01:58.245Z"
+    },
+    {
+      "feature": "oic-stock-alert",
+      "action": "phase_complete",
+      "phase": "report",
+      "nextPhase": "completed",
+      "timestamp": "2026-05-25T07:08:19.870Z"
     }
   ]
 }

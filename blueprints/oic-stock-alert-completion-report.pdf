@@ -1,0 +1,200 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Length 3048 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert Completion Report) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 1) Tj ET
+BT /F2 18 Tf 54 734 Td (Completion Report: oic-stock-alert) Tj ET
+54 720 m 558 720 l S
+BT /F3 10 Tf 54 698 Td (Date: 2026-05-25 | Level: Starter | Format target: PDF blueprint) Tj ET
+BT /F3 10 Tf 54 684 Td (Repository: https://github.com/ai-ml-kiosk/test-oic-stock-api) Tj ET
+BT /F1 10 Tf 54 664 Td (---) Tj ET
+BT /F2 14 Tf 54 640 Td (1. Summary) Tj ET
+BT /F2 11 Tf 54 614 Td (1.1 Feature Overview) Tj ET
+BT /F1 10 Tf 54 591 Td (The OIC Stock Alert MVP is a dependency-free Python HTTP API that evaluates stock alert) Tj ET
+BT /F1 10 Tf 54 577 Td (rules and returns OIC-friendly JSON routing metadata. It provides a health endpoint, an) Tj ET
+BT /F1 10 Tf 54 563 Td (alert evaluation endpoint, deterministic mock quote behavior, validation, rule) Tj ET
+BT /F1 10 Tf 54 549 Td (evaluation, error mapping, OpenAPI/JSON Schema artifacts, sample payloads, and an OIC) Tj ET
+BT /F1 10 Tf 54 535 Td (Switch branch mapping guide.) Tj ET
+BT /F1 10 Tf 54 515 Td (The API is designed for Oracle Integration Cloud flows that need a stable branch field:) Tj ET
+BT /F4 8 Tf 54 495 Td (response.oic.switchBranch) Tj ET
+BT /F1 10 Tf 54 474 Td (Supported branch values:) Tj ET
+BT /F1 10 Tf 54 454 Td (- ALERT_TRIGGERED) Tj ET
+BT /F1 10 Tf 54 440 Td (- NO_ALERT) Tj ET
+BT /F1 10 Tf 54 426 Td (- INPUT_ERROR) Tj ET
+BT /F1 10 Tf 54 412 Td (- QUOTE_UNAVAILABLE) Tj ET
+BT /F1 10 Tf 54 398 Td (- PROVIDER_TIMEOUT) Tj ET
+BT /F1 10 Tf 54 384 Td (- SYSTEM_ERROR) Tj ET
+BT /F2 11 Tf 54 364 Td (1.2 Final Match Rate) Tj ET
+BT /F1 10 Tf 54 341 Td (95% \(Target: 90%\)) Tj ET
+BT /F1 10 Tf 54 321 Td (The Check phase found 38 implemented or substantially matched items out of 40 design) Tj ET
+BT /F1 10 Tf 54 307 Td (items. The remaining gaps are accepted MVP limitations related to live quote provider) Tj ET
+BT /F1 10 Tf 54 293 Td (selection and live-provider timeout behavior.) Tj ET
+BT /F2 14 Tf 54 269 Td (2. Related Documents) Tj ET
+BT /F4 8 Tf 54 243 Td (Document | Path) Tj ET
+BT /F4 8 Tf 54 232 Td (Plan | docs/01-plan/features/oic-stock-alert.plan.md) Tj ET
+BT /F4 8 Tf 54 221 Td (Design | docs/02-design/features/oic-stock-alert.design.md) Tj ET
+BT /F4 8 Tf 54 210 Td (Do notes | docs/02-design/features/oic-stock-alert.do.md) Tj ET
+BT /F4 8 Tf 54 199 Td (Gap analysis | docs/03-analysis/oic-stock-alert.analysis.md) Tj ET
+BT /F4 8 Tf 54 188 Td (Report markdown | docs/04-report/oic-stock-alert.report.md) Tj ET
+BT /F4 8 Tf 54 177 Td (Report PDF | blueprints/oic-stock-alert-completion-report.pdf) Tj ET
+BT /F2 14 Tf 54 156 Td (3. Completed Items) Tj ET
+BT /F1 10 Tf 54 130 Td (- [x] Planned MVP scope, functional requirements, non-functional requirements,) Tj ET
+BT /F1 10 Tf 68 116 Td (success criteria, and risks.) Tj ET
+BT /F1 10 Tf 54 102 Td (- [x] Designed API architecture, data model, JSON payloads, error contract, mapping) Tj ET
+BT /F1 10 Tf 68 88 Td (logic, and OIC Switch branches.) Tj ET
+BT /F1 10 Tf 54 74 Td (- [x] Implemented GET /health.) Tj ET
+Q
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 11 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 4003 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert Completion Report) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 2) Tj ET
+BT /F1 10 Tf 54 734 Td (- [x] Implemented POST /v1/alerts/evaluate.) Tj ET
+BT /F1 10 Tf 54 720 Td (- [x] Implemented request normalization for request ID, symbol, currency, provider) Tj ET
+BT /F1 10 Tf 68 706 Td (mode, and OIC tracking ID.) Tj ET
+BT /F1 10 Tf 54 692 Td (- [x] Implemented validation for symbol format, rule count, duplicate rule IDs,) Tj ET
+BT /F1 10 Tf 68 678 Td (metrics, operators, thresholds, severity, message length, and JSON body size.) Tj ET
+BT /F1 10 Tf 54 664 Td (- [x] Implemented deterministic mock quote provider with success, missing quote,) Tj ET
+BT /F1 10 Tf 68 650 Td (timeout, and provider error fixtures.) Tj ET
+BT /F1 10 Tf 54 636 Td (- [x] Implemented alert evaluation for gt, gte, lt, lte, eq, and absGte.) Tj ET
+BT /F1 10 Tf 54 622 Td (- [x] Implemented aggregate decisions for ALERT_TRIGGERED and NO_ALERT.) Tj ET
+BT /F1 10 Tf 54 608 Td (- [x] Implemented error decisions for INPUT_ERROR, QUOTE_UNAVAILABLE,) Tj ET
+BT /F1 10 Tf 68 594 Td (PROVIDER_TIMEOUT, and SYSTEM_ERROR.) Tj ET
+BT /F1 10 Tf 54 580 Td (- [x] Implemented OIC metadata: switchBranch, notificationRecommended,) Tj ET
+BT /F1 10 Tf 68 566 Td (retryRecommended, and trackingId.) Tj ET
+BT /F1 10 Tf 54 552 Td (- [x] Extracted OpenAPI 3.1, JSON Schemas, sample payloads, and OIC Switch mapping) Tj ET
+BT /F1 10 Tf 68 538 Td (artifacts under artifacts/.) Tj ET
+BT /F1 10 Tf 54 524 Td (- [x] Added unit, API contract, and artifact tests.) Tj ET
+BT /F1 10 Tf 54 510 Td (- [x] Published implementation and artifacts to GitHub.) Tj ET
+BT /F2 14 Tf 54 486 Td (4. Deviations From Design) Tj ET
+BT /F4 8 Tf 54 460 Td (Deviation | Impact | Decision) Tj ET
+BT /F4 8 Tf 54 449 Td (Live quote provider integration is not implemented. | Low for MVP; mock mode is the) Tj ET
+BT /F4 8 Tf 54 438 Td (approved local/CI path. | Defer until provider is selected.) Tj ET
+BT /F4 8 Tf 54 427 Td (QUOTE_PROVIDER_TIMEOUT_MS is loaded but not used for outbound calls. | Low; timeout is) Tj ET
+BT /F4 8 Tf 54 416 Td (simulated through mock symbol TIMEOUT. | Implement with live provider.) Tj ET
+BT /F4 8 Tf 54 405 Td (QUOTE_PROVIDER_NAME is loaded but not directly surfaced in diagnostics. | Low; responses) Tj ET
+BT /F4 8 Tf 54 394 Td (include provider mode and quote provider identity. | Revisit when live providers are) Tj ET
+BT /F4 8 Tf 54 383 Td (added.) Tj ET
+BT /F4 8 Tf 54 372 Td (PROVIDER_ERROR retry behavior is conservative \(false\). | Low; avoids unsafe retry loops) Tj ET
+BT /F4 8 Tf 54 361 Td (without provider-specific classification. | Add provider-specific retry mapping later.) Tj ET
+BT /F4 8 Tf 54 350 Td (Extracted artifacts were added after design. | Positive addition. | Keep artifacts as) Tj ET
+BT /F4 8 Tf 54 339 Td (blueprint deliverables.) Tj ET
+BT /F2 14 Tf 54 318 Td (5. Metrics) Tj ET
+BT /F4 8 Tf 54 292 Td (Metric | Value) Tj ET
+BT /F4 8 Tf 54 281 Td (Final match rate | 95%) Tj ET
+BT /F4 8 Tf 54 270 Td (Target match rate | 90%) Tj ET
+BT /F4 8 Tf 54 259 Td (PDCA iterations | 1) Tj ET
+BT /F4 8 Tf 54 248 Td (Tracked files | 31) Tj ET
+BT /F4 8 Tf 54 237 Td (Python source lines | 660) Tj ET
+BT /F4 8 Tf 54 226 Td (Test source lines | 245) Tj ET
+BT /F4 8 Tf 54 215 Td (Artifact lines | 1,256) Tj ET
+BT /F4 8 Tf 54 204 Td (Documentation lines | 995 before this report) Tj ET
+BT /F4 8 Tf 54 193 Td (Automated tests | 16) Tj ET
+BT /F4 8 Tf 54 182 Td (Test command | python3 -m unittest discover -s tests) Tj ET
+BT /F4 8 Tf 54 171 Td (Latest pushed commit | ab692f4 Add OIC stock alert gap analysis) Tj ET
+BT /F2 14 Tf 54 150 Td (6. Quality Metrics) Tj ET
+BT /F4 8 Tf 54 124 Td (Area | Result) Tj ET
+BT /F4 8 Tf 54 113 Td (Unit tests | Passing) Tj ET
+BT /F4 8 Tf 54 102 Td (API contract tests | Passing) Tj ET
+BT /F4 8 Tf 54 91 Td (Artifact tests | Passing) Tj ET
+BT /F4 8 Tf 54 80 Td (JSON artifact parse checks | Passing) Tj ET
+BT /F4 8 Tf 54 69 Td (Secrets committed | None identified) Tj ET
+Q
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 11 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 3217 >>
+stream
+q
+BT /F2 9 Tf 54 762 Td (OIC Stock Alert Completion Report) Tj ET
+BT /F1 8 Tf 523 30 Td (Page 3) Tj ET
+BT /F4 8 Tf 54 734 Td (Runtime dependencies | None) Tj ET
+BT /F4 8 Tf 54 723 Td (OIC Switch branch coverage | Complete for all designed branches) Tj ET
+BT /F2 14 Tf 54 702 Td (7. Blueprint Artifacts) Tj ET
+BT /F4 8 Tf 54 676 Td (Artifact | Path) Tj ET
+BT /F4 8 Tf 54 665 Td (OpenAPI contract | artifacts/openapi/oic-stock-alert.openapi.json) Tj ET
+BT /F4 8 Tf 54 654 Td (Request JSON Schema | artifacts/json-schema/alert-evaluation-request.schema.json) Tj ET
+BT /F4 8 Tf 54 643 Td (Response JSON Schema | artifacts/json-schema/alert-evaluation-response.schema.json) Tj ET
+BT /F4 8 Tf 54 632 Td (Sample alert request | artifacts/samples/evaluate-alert-triggered.request.json) Tj ET
+BT /F4 8 Tf 54 621 Td (Sample alert response | artifacts/samples/evaluate-alert-triggered.response.json) Tj ET
+BT /F4 8 Tf 54 610 Td (Sample no-alert request | artifacts/samples/evaluate-no-alert.request.json) Tj ET
+BT /F4 8 Tf 54 599 Td (Sample no-alert response | artifacts/samples/evaluate-no-alert.response.json) Tj ET
+BT /F4 8 Tf 54 588 Td (Validation error sample | artifacts/samples/validation-error.response.json) Tj ET
+BT /F4 8 Tf 54 577 Td (Provider timeout sample | artifacts/samples/provider-timeout.response.json) Tj ET
+BT /F4 8 Tf 54 566 Td (OIC Switch guide | artifacts/oic/oic-switch-branches.md) Tj ET
+BT /F2 14 Tf 54 545 Td (8. Lessons Learned) Tj ET
+BT /F1 10 Tf 54 519 Td (1. Keeping the MVP dependency-free made local testing and GitHub publication) Tj ET
+BT /F1 10 Tf 54 505 Td (straightforward.) Tj ET
+BT /F1 10 Tf 54 491 Td (2. The OIC Switch branch field should remain a first-class contract field because) Tj ET
+BT /F1 10 Tf 54 477 Td (it simplifies integration mapping.) Tj ET
+BT /F1 10 Tf 54 463 Td (3. Extracting OpenAPI, JSON Schema, and sample payload artifacts made the) Tj ET
+BT /F1 10 Tf 54 449 Td (blueprint more reusable than a design document alone.) Tj ET
+BT /F1 10 Tf 54 435 Td (4. Mock provider fixtures are enough to validate OIC routing paths before) Tj ET
+BT /F1 10 Tf 54 421 Td (selecting a live market data provider.) Tj ET
+BT /F1 10 Tf 54 407 Td (5. Live-provider retry semantics should be provider-specific rather than guessed) Tj ET
+BT /F1 10 Tf 54 393 Td (early.) Tj ET
+BT /F2 14 Tf 54 369 Td (9. Follow-up Items) Tj ET
+BT /F1 10 Tf 54 343 Td (- [ ] Select the live stock quote provider.) Tj ET
+BT /F1 10 Tf 54 329 Td (- [ ] Implement live quote provider integration.) Tj ET
+BT /F1 10 Tf 54 315 Td (- [ ] Apply QUOTE_PROVIDER_TIMEOUT_MS to live outbound calls.) Tj ET
+BT /F1 10 Tf 54 301 Td (- [ ] Surface provider name in diagnostics when multiple providers are supported.) Tj ET
+BT /F1 10 Tf 54 287 Td (- [ ] Add provider-specific retry classification for transient errors.) Tj ET
+BT /F1 10 Tf 54 273 Td (- [ ] Decide whether OIC or the API owns persistent watchlists in a future release.) Tj ET
+BT /F2 14 Tf 54 249 Td (10. Final Recommendation) Tj ET
+BT /F1 10 Tf 54 223 Td (Proceed to archive after stakeholder review of the PDF blueprint. The MVP meets the PDCA) Tj ET
+BT /F1 10 Tf 54 209 Td (report threshold and is ready for reuse as an OIC Stock Alert API blueprint.) Tj ET
+Q
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 11 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>
+endobj
+12 0 obj
+<< /Type /Catalog /Pages 11 0 R >>
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000154 00000 n 
+0000000232 00000 n 
+0000000300 00000 n 
+0000003399 00000 n 
+0000003556 00000 n 
+0000007610 00000 n 
+0000007767 00000 n 
+0000011035 00000 n 
+0000011193 00000 n 
+0000011264 00000 n 
+trailer
+<< /Size 13 /Root 12 0 R >>
+startxref
+11315
+%%EOF
