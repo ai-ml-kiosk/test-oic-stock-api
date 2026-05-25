@@ -1,0 +1,9 @@
+[project]
+name = "oic-stock-alert"
+version = "1.0.0"
+description = "Dependency-free OIC-friendly stock alert evaluation API"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
