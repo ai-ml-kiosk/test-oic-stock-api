@@ -1,0 +1,22 @@
+{
+  "requestId": "oic-run-20260525-004",
+  "status": "error",
+  "symbol": "TIMEOUT",
+  "error": {
+    "code": "PROVIDER_TIMEOUT",
+    "message": "Quote provider timed out",
+    "details": []
+  },
+  "decision": {
+    "triggered": false,
+    "code": "PROVIDER_TIMEOUT",
+    "severity": "warning",
+    "message": "Quote provider timed out"
+  },
+  "oic": {
+    "switchBranch": "PROVIDER_TIMEOUT",
+    "notificationRecommended": false,
+    "retryRecommended": true,
+    "trackingId": "oic-run-20260525-004"
+  }
+}

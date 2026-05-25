@@ -1,0 +1,27 @@
+{
+  "requestId": "oic-run-20260525-003",
+  "status": "error",
+  "symbol": "BAD SYMBOL",
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "field": "symbol",
+        "issue": "Symbol must match pattern ^[A-Z][A-Z0-9.:-]{0,14}$"
+      }
+    ]
+  },
+  "decision": {
+    "triggered": false,
+    "code": "INPUT_ERROR",
+    "severity": "warning",
+    "message": "Input could not be evaluated"
+  },
+  "oic": {
+    "switchBranch": "INPUT_ERROR",
+    "notificationRecommended": false,
+    "retryRecommended": false,
+    "trackingId": "300000123456791"
+  }
+}

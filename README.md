@@ -68,6 +68,18 @@ Supported branch values:
 - `PROVIDER_TIMEOUT`
 - `SYSTEM_ERROR`
 
+## Extracted Artifacts
+
+Reusable contract artifacts are available under `artifacts/`:
+
+| Path | Purpose |
+|------|---------|
+| `artifacts/openapi/oic-stock-alert.openapi.json` | OpenAPI 3.1 contract for the API. |
+| `artifacts/json-schema/alert-evaluation-request.schema.json` | JSON Schema for evaluation requests. |
+| `artifacts/json-schema/alert-evaluation-response.schema.json` | JSON Schema for success and error responses. |
+| `artifacts/samples/*.json` | OIC-ready sample request and response payloads. |
+| `artifacts/oic/oic-switch-branches.md` | Switch branch setup and field mappings. |
+
 ## Test
 
 ```sh

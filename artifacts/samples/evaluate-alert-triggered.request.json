@@ -1,0 +1,24 @@
+{
+  "requestId": "oic-run-20260525-001",
+  "source": {
+    "system": "OIC",
+    "integrationName": "StockAlertIntegration",
+    "instanceId": "300000123456789"
+  },
+  "symbol": "ORCL",
+  "currency": "USD",
+  "rules": [
+    {
+      "ruleId": "orcl-above-150",
+      "metric": "lastPrice",
+      "operator": "gte",
+      "threshold": 150.0,
+      "severity": "high",
+      "message": "ORCL crossed target price"
+    }
+  ],
+  "options": {
+    "providerMode": "mock",
+    "includeDiagnostics": true
+  }
+}

@@ -31,6 +31,11 @@ Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
   - `oic.retryRecommended`
   - `oic.trackingId`
 - Unit and API contract tests using Python `unittest`.
+- Extracted reusable API/OIC artifacts under `artifacts/`:
+  - OpenAPI 3.1 contract.
+  - Request and response JSON Schemas.
+  - Sample OIC request and response payloads.
+  - OIC Switch branch mapping guide.
 
 ## Source Files
 
@@ -46,6 +51,11 @@ Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
 | `oic_stock_alert/server.py` | Standard-library HTTP server. |
 | `tests/test_evaluator.py` | Unit tests for evaluator and validation behavior. |
 | `tests/test_api_contract.py` | HTTP contract tests for API and OIC branch responses. |
+| `artifacts/openapi/oic-stock-alert.openapi.json` | OpenAPI contract artifact. |
+| `artifacts/json-schema/alert-evaluation-request.schema.json` | Request schema artifact. |
+| `artifacts/json-schema/alert-evaluation-response.schema.json` | Response schema artifact. |
+| `artifacts/samples/*.json` | Sample payload artifacts. |
+| `artifacts/oic/oic-switch-branches.md` | OIC Switch branch artifact. |
 
 ## Verification Commands
 

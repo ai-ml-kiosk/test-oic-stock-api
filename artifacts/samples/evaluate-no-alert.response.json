@@ -1,0 +1,41 @@
+{
+  "requestId": "oic-run-20260525-002",
+  "status": "success",
+  "symbol": "ORCL",
+  "quote": {
+    "symbol": "ORCL",
+    "lastPrice": 152.31,
+    "currency": "USD",
+    "change": 2.14,
+    "changePercent": 1.43,
+    "dayHigh": 153.2,
+    "dayLow": 149.7,
+    "volume": 12654321,
+    "asOf": "2026-05-25T05:35:00Z",
+    "provider": "mock"
+  },
+  "rules": [
+    {
+      "ruleId": "orcl-above-200",
+      "metric": "lastPrice",
+      "operator": "gte",
+      "threshold": 200.0,
+      "actualValue": 152.31,
+      "triggered": false,
+      "severity": "high",
+      "message": "ORCL crossed target price"
+    }
+  ],
+  "decision": {
+    "triggered": false,
+    "code": "NO_ALERT",
+    "severity": "info",
+    "message": "No alert rules triggered for ORCL"
+  },
+  "oic": {
+    "switchBranch": "NO_ALERT",
+    "notificationRecommended": false,
+    "retryRecommended": false,
+    "trackingId": "300000123456790"
+  }
+}

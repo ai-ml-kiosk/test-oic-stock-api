@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ai-ml-kiosk/test-oic-stock-api/artifacts/json-schema/alert-evaluation-response.schema.json",
+  "title": "OIC Stock Alert Evaluation Response",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/successResponse"
+    },
+    {
+      "$ref": "#/$defs/errorResponse"
+    }
+  ],
+  "$defs": {
+    "successResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "status",
+        "symbol",
+        "quote",
+        "rules",
+        "decision",
+        "oic"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "status": {
+          "const": "success"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "quote": {
+          "$ref": "#/$defs/quote"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ruleEvaluation"
+          }
+        },
+        "decision": {
+          "$ref": "#/$defs/decision"
+        },
+        "oic": {
+          "$ref": "#/$defs/oicRouting"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "errorResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "status",
+        "symbol",
+        "error",
+        "decision",
+        "oic"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "status": {
+          "const": "error"
+        },
+        "symbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "error": {
+          "$ref": "#/$defs/apiError"
+        },
+        "decision": {
+          "$ref": "#/$defs/decision"
+        },
+        "oic": {
+          "$ref": "#/$defs/oicRouting"
+        }
+      }
+    },
+    "quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "lastPrice",
+        "currency",
+        "change",
+        "changePercent",
+        "dayHigh",
+        "dayLow",
+        "volume",
+        "asOf",
+        "provider"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "lastPrice": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "change": {
+          "type": "number"
+        },
+        "changePercent": {
+          "type": "number"
+        },
+        "dayHigh": {
+          "type": "number"
+        },
+        "dayLow": {
+          "type": "number"
+        },
+        "volume": {
+          "type": "number"
+        },
+        "asOf": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provider": {
+          "type": "string"
+        }
+      }
+    },
+    "ruleEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "metric",
+        "operator",
+        "threshold",
+        "actualValue",
+        "triggered",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "actualValue": {
+          "type": "number"
+        },
+        "triggered": {
+          "type": "boolean"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triggered",
+        "code",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "triggered": {
+          "type": "boolean"
+        },
+        "code": {
+          "$ref": "#/$defs/decisionCode"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "oicRouting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "switchBranch",
+        "notificationRecommended",
+        "retryRecommended",
+        "trackingId"
+      ],
+      "properties": {
+        "switchBranch": {
+          "$ref": "#/$defs/switchBranch"
+        },
+        "notificationRecommended": {
+          "type": "boolean"
+        },
+        "retryRecommended": {
+          "type": "boolean"
+        },
+        "trackingId": {
+          "type": "string"
+        }
+      }
+    },
+    "apiError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "details"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "VALIDATION_ERROR",
+            "UNSUPPORTED_RULE",
+            "QUOTE_NOT_FOUND",
+            "PROVIDER_ERROR",
+            "PROVIDER_TIMEOUT",
+            "SYSTEM_ERROR"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "providerMode",
+        "elapsedMs",
+        "ruleCount",
+        "triggeredCount"
+      ],
+      "properties": {
+        "providerMode": {
+          "type": "string"
+        },
+        "elapsedMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ruleCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "triggeredCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "decisionCode": {
+      "type": "string",
+      "enum": [
+        "ALERT_TRIGGERED",
+        "NO_ALERT",
+        "INPUT_ERROR",
+        "QUOTE_UNAVAILABLE",
+        "PROVIDER_TIMEOUT",
+        "SYSTEM_ERROR"
+      ]
+    },
+    "switchBranch": {
+      "type": "string",
+      "enum": [
+        "ALERT_TRIGGERED",
+        "NO_ALERT",
+        "INPUT_ERROR",
+        "QUOTE_UNAVAILABLE",
+        "PROVIDER_TIMEOUT",
+        "SYSTEM_ERROR"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "high",
+        "critical"
+      ]
+    }
+  }
+}

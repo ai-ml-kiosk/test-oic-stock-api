@@ -1,0 +1,558 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OIC Stock Alert API",
+    "version": "1.0.0",
+    "description": "OIC-friendly stock alert evaluation API with deterministic Switch branch response fields."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service health metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/alerts/evaluate": {
+      "post": {
+        "operationId": "evaluateStockAlert",
+        "summary": "Evaluate stock alert rules for OIC routing",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertEvaluationRequest"
+              },
+              "examples": {
+                "alertTriggered": {
+                  "summary": "ORCL threshold alert",
+                  "value": {
+                    "requestId": "oic-run-20260525-001",
+                    "source": {
+                      "system": "OIC",
+                      "integrationName": "StockAlertIntegration",
+                      "instanceId": "300000123456789"
+                    },
+                    "symbol": "ORCL",
+                    "currency": "USD",
+                    "rules": [
+                      {
+                        "ruleId": "orcl-above-150",
+                        "metric": "lastPrice",
+                        "operator": "gte",
+                        "threshold": 150,
+                        "severity": "high",
+                        "message": "ORCL crossed target price"
+                      }
+                    ],
+                    "options": {
+                      "providerMode": "mock",
+                      "includeDiagnostics": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evaluation completed; inspect decision and oic.switchBranch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertEvaluationSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "502": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "504": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "ErrorResponse": {
+        "description": "OIC-friendly error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AlertEvaluationErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "version",
+          "providerMode",
+          "timestamp"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok"
+          },
+          "service": {
+            "type": "string",
+            "const": "oic-stock-alert"
+          },
+          "version": {
+            "type": "string"
+          },
+          "providerMode": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AlertEvaluationRequest": {
+        "type": "object",
+        "required": [
+          "symbol",
+          "rules"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "source": {
+            "$ref": "#/components/schemas/RequestSource"
+          },
+          "symbol": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9.:-]{0,14}$"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{3}$"
+          },
+          "rules": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/AlertRule"
+            }
+          },
+          "options": {
+            "$ref": "#/components/schemas/EvaluationOptions"
+          }
+        }
+      },
+      "RequestSource": {
+        "type": "object",
+        "properties": {
+          "system": {
+            "type": "string"
+          },
+          "integrationName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "instanceId": {
+            "type": "string"
+          }
+        }
+      },
+      "EvaluationOptions": {
+        "type": "object",
+        "properties": {
+          "providerMode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "live"
+            ]
+          },
+          "includeDiagnostics": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "AlertRule": {
+        "type": "object",
+        "required": [
+          "ruleId",
+          "metric",
+          "operator",
+          "threshold"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "lastPrice",
+              "changePercent",
+              "dayHigh",
+              "dayLow",
+              "volume"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "eq",
+              "absGte"
+            ]
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 240
+          }
+        }
+      },
+      "AlertEvaluationSuccessResponse": {
+        "type": "object",
+        "required": [
+          "requestId",
+          "status",
+          "symbol",
+          "quote",
+          "rules",
+          "decision",
+          "oic"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "const": "success"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleEvaluation"
+            }
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "oic": {
+            "$ref": "#/components/schemas/OicRouting"
+          },
+          "diagnostics": {
+            "$ref": "#/components/schemas/Diagnostics"
+          }
+        }
+      },
+      "AlertEvaluationErrorResponse": {
+        "type": "object",
+        "required": [
+          "requestId",
+          "status",
+          "symbol",
+          "error",
+          "decision",
+          "oic"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "const": "error"
+          },
+          "symbol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "oic": {
+            "$ref": "#/components/schemas/OicRouting"
+          }
+        }
+      },
+      "Quote": {
+        "type": "object",
+        "required": [
+          "symbol",
+          "lastPrice",
+          "currency",
+          "change",
+          "changePercent",
+          "dayHigh",
+          "dayLow",
+          "volume",
+          "asOf",
+          "provider"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "lastPrice": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "change": {
+            "type": "number"
+          },
+          "changePercent": {
+            "type": "number"
+          },
+          "dayHigh": {
+            "type": "number"
+          },
+          "dayLow": {
+            "type": "number"
+          },
+          "volume": {
+            "type": "number"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provider": {
+            "type": "string"
+          }
+        }
+      },
+      "RuleEvaluation": {
+        "type": "object",
+        "required": [
+          "ruleId",
+          "metric",
+          "operator",
+          "threshold",
+          "actualValue",
+          "triggered",
+          "severity",
+          "message"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "actualValue": {
+            "type": "number"
+          },
+          "triggered": {
+            "type": "boolean"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Decision": {
+        "type": "object",
+        "required": [
+          "triggered",
+          "code",
+          "severity",
+          "message"
+        ],
+        "properties": {
+          "triggered": {
+            "type": "boolean"
+          },
+          "code": {
+            "$ref": "#/components/schemas/DecisionCode"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "OicRouting": {
+        "type": "object",
+        "required": [
+          "switchBranch",
+          "notificationRecommended",
+          "retryRecommended",
+          "trackingId"
+        ],
+        "properties": {
+          "switchBranch": {
+            "$ref": "#/components/schemas/SwitchBranch"
+          },
+          "notificationRecommended": {
+            "type": "boolean"
+          },
+          "retryRecommended": {
+            "type": "boolean"
+          },
+          "trackingId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "Diagnostics": {
+        "type": "object",
+        "properties": {
+          "providerMode": {
+            "type": "string"
+          },
+          "elapsedMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ruleCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "triggeredCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "DecisionCode": {
+        "type": "string",
+        "enum": [
+          "ALERT_TRIGGERED",
+          "NO_ALERT",
+          "INPUT_ERROR",
+          "QUOTE_UNAVAILABLE",
+          "PROVIDER_TIMEOUT",
+          "SYSTEM_ERROR"
+        ]
+      },
+      "SwitchBranch": {
+        "type": "string",
+        "enum": [
+          "ALERT_TRIGGERED",
+          "NO_ALERT",
+          "INPUT_ERROR",
+          "QUOTE_UNAVAILABLE",
+          "PROVIDER_TIMEOUT",
+          "SYSTEM_ERROR"
+        ]
+      },
+      "Severity": {
+        "type": "string",
+        "enum": [
+          "info",
+          "warning",
+          "high",
+          "critical"
+        ]
+      }
+    }
+  }
+}
