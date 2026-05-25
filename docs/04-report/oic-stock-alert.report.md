@@ -1,6 +1,6 @@
 # Completion Report: oic-stock-alert
 
-> Date: 2026-05-25 | Level: Starter | Format target: PDF blueprint
+> Date: 2026-05-25 | Level: Starter | Format targets: PDF all
 > Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
 
 ---
@@ -41,7 +41,9 @@ The Check phase found 38 implemented or substantially matched items out of 40 de
 | Do notes | `docs/02-design/features/oic-stock-alert.do.md` |
 | Gap analysis | `docs/03-analysis/oic-stock-alert.analysis.md` |
 | Report markdown | `docs/04-report/oic-stock-alert.report.md` |
-| Report PDF | `blueprints/oic-stock-alert-completion-report.pdf` |
+| Report PDF | `docs/04-report/oic-stock-alert.report.pdf` |
+| Blueprint PDF | `blueprints/oic-stock-alert-completion-report.pdf` |
+| Design PDF | `design/oic-stock-alert-completion-report.pdf` |
 
 ## 3. Completed Items
 
@@ -132,5 +134,4 @@ The Check phase found 38 implemented or substantially matched items out of 40 de
 
 ## 10. Final Recommendation
 
-Proceed to archive after stakeholder review of the PDF blueprint. The MVP meets the PDCA report threshold and is ready for reuse as an OIC Stock Alert API blueprint.
-
+Proceed to archive after stakeholder review of the PDF report artifacts. The MVP meets the PDCA report threshold and is ready for reuse as an OIC Stock Alert API blueprint.
