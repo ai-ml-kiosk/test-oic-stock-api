@@ -41,6 +41,8 @@ Repository: `https://github.com/ai-ml-kiosk/test-oic-stock-api`
   - `oic.retryRecommended`
   - `oic.trackingId`
 - Unit and API contract tests using Python `unittest`.
+- Test files support both `python3 -m unittest discover -s tests` and direct file execution from the repository root.
+- Direct-executable test files bootstrap the repository root onto `sys.path` before importing `oic_stock_alert`.
 - Extracted reusable API/OIC artifacts under `artifacts/`:
   - OpenAPI 3.1 contract.
   - Request and response JSON Schemas.
@@ -79,6 +81,14 @@ python3 -m unittest discover -s tests
 ```
 
 ```sh
+python3 tests/test_alpha_vantage_provider.py
+python3 tests/test_env_loader.py
+python3 tests/test_api_contract.py
+python3 tests/test_artifacts.py
+python3 tests/test_evaluator.py
+```
+
+```sh
 python3 -m oic_stock_alert.server
 ```
 
@@ -103,7 +113,10 @@ This Do phase is ready for initial commit and push with the implementation, test
 | `.env` credential parsing | `load_env_file`, `apply_env_defaults`, `load_settings` |
 | Alpha Vantage live provider | `get_alpha_vantage_quote`, `normalize_global_quote`, `get_quote` |
 | Provider timeout mapping | `ProviderTimeoutError`, Alpha Vantage timeout handling |
+| Alpha Vantage timeout test mock | `tests/test_alpha_vantage_provider.py` patches `urlopen` with `URLError(socket.timeout("timed out"))` |
+| Environment-backed settings test mock | `tests/test_alpha_vantage_provider.py` uses `patch.dict` before `load_settings()` |
 | Provider rate-limit / invalid-key mapping | Alpha Vantage `Note` and `Information` handling |
+| Direct test-file execution | `tests/test_*.py` repository-root path bootstrap |
 | Rule evaluation | `evaluate_rules`, `build_decision` |
 | Success response mapping | `build_success_response` |
 | Error response mapping | `build_error_response` |

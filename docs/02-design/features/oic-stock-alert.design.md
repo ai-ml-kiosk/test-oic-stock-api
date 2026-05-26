@@ -652,6 +652,8 @@ Local `.env` behavior:
 | Alpha Vantage rate-limit note | `PROVIDER_ERROR`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 | Alpha Vantage empty quote | `QUOTE_NOT_FOUND`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 | Alpha Vantage timeout | `PROVIDER_TIMEOUT`, `oic.switchBranch = PROVIDER_TIMEOUT`, `retryRecommended = true`. |
+| Alpha Vantage network timeout mock | Patch `urllib.request.urlopen` with a `urllib.error.URLError("timeout")` side effect and verify `ProviderTimeoutError`. |
+| Environment-backed settings mock | Use `unittest.mock.patch.dict` to seed environment variables before calling `load_settings()`; use `Settings(...)` only for explicit test object construction. |
 | Secret redaction | API key is absent from logs, diagnostics, errors, and test output. |
 
 ### 11.2 API Contract Tests
@@ -675,11 +677,23 @@ Local `.env` behavior:
 - Confirm error details can be mapped into a fault or error logging payload.
 - Confirm retry handling preserves `requestId`.
 
-### 11.4 Local Verification Command
+### 11.4 Local Verification Commands
+
+The test suite must support both discovery-based execution and direct test-file execution from the repository root.
 
 ```sh
 python3 -m unittest discover -s tests
 ```
+
+```sh
+python3 tests/test_alpha_vantage_provider.py
+python3 tests/test_env_loader.py
+python3 tests/test_api_contract.py
+python3 tests/test_artifacts.py
+python3 tests/test_evaluator.py
+```
+
+Direct test-file execution is required so handover reviewers can run focused tests without setting `PYTHONPATH` manually.
 
 ## 12. Implementation Order
 

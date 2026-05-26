@@ -5,11 +5,11 @@
 
 ---
 
-## Match Rate: 96%
+## Match Rate: 94%
 
-Calculation: 49 implemented or substantially matched items / 51 design items = 96%.
+Calculation: 51 implemented or substantially matched items / 54 tracked design and verification items = 94%.
 
-The implementation is ready to proceed to the PDCA Report phase. The Alpha Vantage live-provider extension and zero-trust `.env` configuration layer are now implemented behind runtime configuration, while the existing mock path and OIC response contract remain stable.
+The implementation remains above the PDCA report threshold, but the latest handover review identified provider-test structural gaps that should be tracked before report signoff. The Alpha Vantage live-provider extension and zero-trust `.env` configuration layer are implemented behind runtime configuration, while the existing mock path and OIC response contract remain stable.
 
 ## Summary
 
@@ -22,6 +22,7 @@ The implementation now matches the updated 1.1 design for the OIC Stock Alert AP
 - Alpha Vantage response normalization into the internal `Quote` shape.
 - Upstream provider error mapping for empty quote, rate-limit note, invalid-key/information payload, timeout, malformed JSON, and malformed quote payloads.
 - Fixture-based tests that do not require live network access or a real API key.
+- Discovery-based and direct test-file execution from the repository root.
 
 Verification command:
 
@@ -30,6 +31,16 @@ python3 -m unittest discover -s tests
 ```
 
 Result: 26 tests passing.
+
+Direct execution verification:
+
+```sh
+python3 tests/test_alpha_vantage_provider.py
+python3 tests/test_env_loader.py
+python3 tests/test_api_contract.py
+python3 tests/test_artifacts.py
+python3 tests/test_evaluator.py
+```
 
 ## Implemented Items
 
@@ -143,11 +154,15 @@ Result: 26 tests passing.
 - [x] Artifact tests validate JSON parsing, sample request branch behavior, and response branch values.
 - [x] `.env` tests cover comments, blank lines, quoted values, and process-environment precedence.
 - [x] Alpha Vantage tests cover quote normalization, empty quote, rate-limit note, invalid-key information, malformed quote, unsupported provider, missing API key, and timeout.
+- [x] Test files support direct execution from the repository root without manually setting `PYTHONPATH`.
 
 ## Missing Items
 
 - [ ] API-contract-level tests for live Alpha Vantage invalid-symbol and missing-key requests are not yet implemented. Equivalent provider-level coverage exists, and app-level error mapping uses the same `StockAlertError` path as the existing API contract tests.
 - [ ] The generated OpenAPI and JSON Schema artifacts have not yet been extended with live-provider configuration examples. The runtime payload contract remains stable, so this is documentation depth rather than a behavioral gap.
+- [ ] Alpha Vantage timeout tests should simulate the `urlopen` timeout path with `urllib.error.URLError` wrapping a timeout reason, not only a raw `socket.timeout`. This better matches how `urllib.request.urlopen` commonly surfaces network timeouts.
+- [ ] The timeout test should avoid ambiguous no-argument timeout construction and use an explicit timeout reason, for example `socket.timeout("timed out")`, when constructing simulated timeout failures.
+- [ ] Configuration test/design wording should clarify the difference between constructing `Settings(...)` directly for tests and using `load_settings()` for environment-backed runtime loading.
 
 ## Changed Items Or Deviations From Design
 
@@ -157,6 +172,8 @@ Result: 26 tests passing.
 | Changed | Design examples still show health version `1.0.0`. | Runtime health still returns `1.0.0` while design docs are versioned `1.1.0`. | Low. Service version can be bumped during release packaging. |
 | Missing in Tests | API contract tests for live mode. | Provider-level tests cover live behavior without network or real API keys. | Low. Add API-level fixture tests if stricter coverage is needed. |
 | Missing in Artifacts | OpenAPI examples for Alpha Vantage mode. | README, plan, design, HLD, LLD, and Do notes document live mode. | Low. Contract remains unchanged. |
+| Missing in Tests | `urlopen` timeout wrapping. | Current timeout unit test patches `urlopen` with raw `socket.timeout`; implementation also handles `URLError.reason` timeout, but the test does not assert that route. | Medium. Add a fixture for `URLError(socket.timeout("timed out"))`. |
+| Changed | Reported `Settings` constructor behavior. | Current `Settings` is a dataclass and accepts parameter overrides; runtime environment loading is performed by `load_settings()`. | Low. Clarify in design/tests to prevent handover confusion. |
 
 ## Match Matrix
 
@@ -168,20 +185,22 @@ Result: 26 tests passing.
 | Response contracts | 6 | 6 | Success, no-alert, error, diagnostics, decision, and OIC metadata implemented. |
 | Alpha Vantage outbound mapping | 8 | 8 | Endpoint, query params, timeout, and normalizer implemented. |
 | `.env` credential handling | 7 | 7 | Parser, precedence, `.gitignore`, and `.env.example` implemented. |
-| Provider error mapping | 7 | 6 | Main provider conditions covered; one unexpected-client classification is handled at app fallback level. |
+| Provider error mapping | 8 | 6 | Main provider conditions covered; add explicit `URLError` timeout test coverage. |
 | Evaluation logic | 4 | 4 | All operators and severity aggregation implemented. |
 | OIC Switch branches | 6 | 6 | All designed branch values implemented. |
-| Tests and artifacts | 7 | 5 | Runtime tests added; OpenAPI/schema live examples and API-level live tests remain optional gaps. |
+| Tests and artifacts | 9 | 6 | Runtime tests added; direct execution works; timeout fidelity, OpenAPI/schema live examples, and API-level live tests remain tracked gaps. |
 
 ## Recommendations
 
-1. Proceed to `$pdca report oic-stock-alert` because the match rate is above 90%.
-2. Add API-level live-provider fixture tests in a future hardening pass if strict endpoint coverage is required.
-3. Extend OpenAPI examples with Alpha Vantage live-mode configuration notes during the next artifact extraction/report cycle.
-4. Consider bumping the runtime health `version` from `1.0.0` to `1.1.0` when packaging the live-provider release.
+1. Run `$pdca iterate oic-stock-alert` before report signoff to harden the Alpha Vantage timeout tests.
+2. Add a unit test where patched `urlopen` raises `URLError(socket.timeout("timed out"))` and verify it maps to `ProviderTimeoutError`.
+3. Replace ambiguous timeout construction in tests with explicit timeout messages.
+4. Clarify in documentation that `Settings(...)` is the test/config object constructor and `load_settings()` is the environment-backed runtime loader.
+5. Add API-level live-provider fixture tests in a future hardening pass if strict endpoint coverage is required.
 
 ## Next Steps
 
 - [x] Run implementation, provider, environment, API contract, and artifact tests.
 - [x] Refresh gap analysis document.
-- [ ] Run `$pdca report oic-stock-alert`.
+- [x] Log handover-discovered provider-test structural gaps.
+- [ ] Run `$pdca iterate oic-stock-alert` to address timeout test fidelity and configuration wording.

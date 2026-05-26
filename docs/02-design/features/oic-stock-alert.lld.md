@@ -471,11 +471,22 @@ Alpha Vantage provider mapping:
 | Sample payloads | Valid JSON and aligned with branch expectations. |
 | OIC switch guide | Documents all branch values. |
 
-### 11.4 Verification Command
+### 11.4 Verification Commands
+The test suite must support both discovery-based execution and direct test-file execution from the repository root.
 
 ```sh
 python3 -m unittest discover -s tests
 ```
+
+```sh
+python3 tests/test_alpha_vantage_provider.py
+python3 tests/test_env_loader.py
+python3 tests/test_api_contract.py
+python3 tests/test_artifacts.py
+python3 tests/test_evaluator.py
+```
+
+Direct test-file execution is required so handover reviewers can run focused tests without setting `PYTHONPATH` manually.
 
 ## 12. Implementation Sequence
 

@@ -1,4 +1,8 @@
+import sys
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from oic_stock_alert.evaluator import build_decision, evaluate_rules
 from oic_stock_alert.validation import validate_request
@@ -55,4 +59,3 @@ class EvaluatorTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

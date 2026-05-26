@@ -1,9 +1,15 @@
+import os
 import socket
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
+from urllib.error import URLError
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from oic_stock_alert.alpha_vantage_provider import get_alpha_vantage_quote, normalize_global_quote
-from oic_stock_alert.config import Settings
+from oic_stock_alert.config import load_settings
 from oic_stock_alert.errors import ProviderError, ProviderTimeoutError, QuoteNotFoundError
 from oic_stock_alert.quote_provider import get_quote
 
@@ -25,6 +31,10 @@ GLOBAL_QUOTE = {
 
 
 class AlphaVantageProviderTests(unittest.TestCase):
+    def load_settings_from_env(self, values):
+        with patch.dict(os.environ, values, clear=True), patch("oic_stock_alert.config.load_env_file", return_value={}):
+            return load_settings()
+
     def test_normalize_global_quote(self):
         quote = normalize_global_quote(GLOBAL_QUOTE)
 
@@ -54,25 +64,40 @@ class AlphaVantageProviderTests(unittest.TestCase):
             normalize_global_quote({"Global Quote": {"01. symbol": "IBM"}})
 
     def test_live_mode_requires_api_key(self):
-        settings = Settings(quote_provider_mode="live", quote_provider_name="alpha_vantage", quote_provider_api_key=None)
+        settings = self.load_settings_from_env(
+            {
+                "QUOTE_PROVIDER_MODE": "live",
+                "QUOTE_PROVIDER_NAME": "alpha_vantage",
+            }
+        )
         with self.assertRaises(ProviderError) as context:
             get_quote("IBM", settings)
         self.assertNotIn("apikey", str(context.exception).lower())
         self.assertNotIn("secret", str(context.exception).lower())
 
     def test_live_mode_rejects_unsupported_provider(self):
-        settings = Settings(quote_provider_mode="live", quote_provider_name="other", quote_provider_api_key="secret")
+        settings = self.load_settings_from_env(
+            {
+                "QUOTE_PROVIDER_MODE": "live",
+                "QUOTE_PROVIDER_NAME": "other",
+                "QUOTE_PROVIDER_API_KEY": "secret",
+            }
+        )
         with self.assertRaises(ProviderError):
             get_quote("IBM", settings)
 
     def test_timeout_maps_to_provider_timeout(self):
-        settings = Settings(
-            quote_provider_mode="live",
-            quote_provider_name="alpha_vantage",
-            quote_provider_api_key="secret",
-            quote_provider_timeout_ms=1500,
+        settings = self.load_settings_from_env(
+            {
+                "QUOTE_PROVIDER_MODE": "live",
+                "QUOTE_PROVIDER_NAME": "alpha_vantage",
+                "QUOTE_PROVIDER_API_KEY": "secret",
+                "QUOTE_PROVIDER_TIMEOUT_MS": "1500",
+            }
         )
-        with patch("oic_stock_alert.alpha_vantage_provider.urlopen", side_effect=socket.timeout()):
+        timeout_error = URLError(socket.timeout("timed out"))
+
+        with patch("oic_stock_alert.alpha_vantage_provider.urlopen", side_effect=timeout_error):
             with self.assertRaises(ProviderTimeoutError):
                 get_alpha_vantage_quote("IBM", settings)
 

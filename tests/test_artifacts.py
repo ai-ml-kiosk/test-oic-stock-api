@@ -1,6 +1,9 @@
 import json
+import sys
 import unittest
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from oic_stock_alert.app import StockAlertApp
 from oic_stock_alert.config import Settings
@@ -51,4 +54,3 @@ class ArtifactTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
