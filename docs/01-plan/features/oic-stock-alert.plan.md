@@ -50,6 +50,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Return structured JSON responses that include quote data, alert match status, and error details.
 - Provide health and readiness endpoints.
 - Support OIC-compatible HTTPS exposure through an external TLS termination layer such as OCI API Gateway, OCI Load Balancer, or a reverse proxy while the application server remains HTTP-only on its internal port.
+- Define the preferred ingress/proxy pattern for OIC readiness: OCI API Gateway over HTTPS `443` forwarding to the private HTTP application on `8080`, with Nginx or Caddy as VM-hosted alternatives.
 - Include configuration for provider API keys through environment variables and untracked local `.env` files.
 - Provide local developer setup and verification instructions.
 - Define basic tests for rule evaluation and API response contracts.
@@ -130,6 +131,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Route Alpha Vantage `GLOBAL_QUOTE` payloads through the live provider path without changing the OIC-facing response contract.
 - Prefer JSON contracts that are easy for OIC integrations to map.
 - Use an HTTPS ingress boundary for OIC invokes: `OIC -> HTTPS Gateway/LB/Proxy -> HTTP service:8080`.
+- Prefer OCI API Gateway for production OIC invokes; use Nginx or Caddy only when deploying the service directly on a VM or lightweight host.
 - Use environment-based and untracked `.env` configuration for provider mode, API keys, timeout, and log level.
 - Enforce the configured live provider timeout, defaulting to 1500 ms, and map upstream rate-limit, invalid-symbol, timeout, and provider-error outcomes into existing OIC exception branches.
 - Include request IDs in logs and responses to support OIC troubleshooting.
@@ -141,6 +143,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - [x] OIC-friendly response contract
 - [ ] `.env.example` template
 - [ ] Alpha Vantage live provider module logic
+- [ ] HTTPS ingress/proxy deployment guide with `443 -> 8080` forwarding and smoke-test commands
 
 ## 10. Convention Prerequisites
 

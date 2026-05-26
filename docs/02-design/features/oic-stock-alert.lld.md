@@ -155,6 +155,65 @@ The Python service does not terminate TLS. HTTPS configuration belongs to the se
 | Firewall / security list | Cloud network or host firewall | Allow inbound HTTPS to ingress; restrict application port to ingress/private callers only. |
 | Certificate renewal | Ingress operations | Must be monitored so OIC invokes do not fail because of expiry. |
 
+### 4.3 Preferred OCI API Gateway Mapping
+
+Use OCI API Gateway as the preferred production ingress for OIC REST invokes.
+
+| Field | Value |
+|-------|-------|
+| Public protocol | HTTPS |
+| Public port | `443` |
+| Public path | `/health`, `/v1/alerts/evaluate` |
+| Backend protocol | HTTP |
+| Backend target | Private application host or private load-balancer target |
+| Backend port | `8080` unless `PORT` is overridden |
+| OIC connection URL | `https://<gateway-host>/v1/alerts/evaluate` |
+
+Header forwarding:
+
+| Header | Requirement |
+|--------|-------------|
+| `Host` | Preserve or set to backend-compatible host according to platform routing. |
+| `X-Forwarded-Proto` | Set to `https` where supported. |
+| `X-Forwarded-For` | Preserve caller chain for operations visibility where supported. |
+| `X-Request-Id` | Preserve OIC request correlation header when present. |
+| `Content-Type` | Preserve `application/json` for POST requests. |
+
+Security-list and firewall rules:
+
+- Allow inbound TCP `443` to the API Gateway, load balancer, or reverse proxy.
+- Allow inbound TCP `80` only when the ingress uses HTTP-to-HTTPS redirect.
+- Restrict inbound TCP `8080` to the gateway, load balancer, reverse proxy, localhost, or private subnet only.
+- Do not expose `8080` directly as the OIC endpoint.
+
+### 4.4 VM Reverse Proxy Alternatives
+
+Nginx conceptual mapping:
+
+```text
+listen 443 ssl
+server_name <public-host>
+proxy_pass http://127.0.0.1:8080
+proxy_set_header Host $host
+proxy_set_header X-Forwarded-Proto https
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
+proxy_set_header X-Request-Id $http_x_request_id
+```
+
+Caddy conceptual mapping:
+
+```text
+<public-host> {
+  reverse_proxy 127.0.0.1:8080
+}
+```
+
+Redirect behavior:
+
+- HTTP `80 -> 443` redirect is owned by the ingress/proxy layer.
+- `oic_stock_alert.server` does not redirect HTTP to HTTPS.
+- Direct local HTTP remains valid for development and private health checks.
+
 ## 5. Response JSON Payloads
 
 ### 5.1 Success Response
@@ -485,10 +544,21 @@ Alpha Vantage provider mapping:
 | Invalid symbol | `400`, `error.code = VALIDATION_ERROR`, `oic.switchBranch = INPUT_ERROR`. |
 | Mock provider quote missing | `502`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 | Simulated provider timeout | `504`, `oic.switchBranch = PROVIDER_TIMEOUT`, `retryRecommended = true`. |
+
+### 11.3 Deployment Smoke Tests
+
+HTTPS is validated through deployment smoke tests against the selected ingress endpoint, not through the internal Python unittest server.
+
+| Scenario | Command Shape | Expected Result |
+|----------|---------------|-----------------|
+| HTTPS health through ingress | `curl https://<gateway-host>/health` | `200` JSON health response. |
+| HTTPS evaluation through ingress | `curl -X POST https://<gateway-host>/v1/alerts/evaluate ...` | `200` JSON response with `oic.switchBranch`. |
+| Optional HTTP redirect | `curl -I http://<gateway-host>/health` | `301` or `308` redirect to HTTPS when port `80` is enabled. |
+| App port blocked publicly | `curl http://<public-host>:8080/health` | Connection blocked or unavailable from the public internet. |
 | Live Alpha Vantage fixture alert-triggered | `200`, provider `alpha_vantage`, expected branch from evaluated quote. |
 | Live Alpha Vantage invalid symbol fixture | `502`, `oic.switchBranch = QUOTE_UNAVAILABLE`. |
 
-### 11.3 Artifact Tests
+### 11.4 Artifact Tests
 
 | Artifact | Expected Result |
 |----------|-----------------|
@@ -498,7 +568,7 @@ Alpha Vantage provider mapping:
 | Sample payloads | Valid JSON and aligned with branch expectations. |
 | OIC switch guide | Documents all branch values. |
 
-### 11.4 Verification Commands
+### 11.5 Verification Commands
 The test suite must support both discovery-based execution and direct test-file execution from the repository root.
 
 ```sh

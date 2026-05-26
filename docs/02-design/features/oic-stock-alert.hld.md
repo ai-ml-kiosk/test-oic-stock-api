@@ -178,7 +178,7 @@ Operational behavior is intentionally simple:
 |------|--------|
 | Runtime | Python 3.11+ standard-library HTTP server. |
 | Default port | `8080`, configurable with `PORT`. |
-| HTTPS boundary | External TLS termination by OCI API Gateway, OCI Load Balancer, or reverse proxy. |
+| HTTPS boundary | External TLS termination by OCI API Gateway as the preferred production path; OCI Load Balancer, Nginx, or Caddy are supported alternatives. |
 | Internal service protocol | Plain HTTP from the TLS termination layer to `oic_stock_alert.server`. |
 | Provider mode | `mock` by default, configurable with `QUOTE_PROVIDER_MODE`. |
 | Live provider | `alpha_vantage` through Alpha Vantage `GLOBAL_QUOTE` when explicitly configured. |
@@ -195,6 +195,15 @@ Required operations controls:
 - Certificate renewal and expiry monitoring must be owned by the selected ingress platform.
 - Health checks should call `GET /health` through the same ingress path used by OIC where possible.
 
+Ingress option guidance:
+
+| Option | Public Listener | Backend Target | Notes |
+|--------|-----------------|----------------|-------|
+| OCI API Gateway | HTTPS `443` | HTTP private app endpoint `:8080` | Preferred for OIC-facing REST invokes because it centralizes TLS, policies, logging, and throttling. |
+| OCI Load Balancer | HTTPS `443` | Backend set on HTTP `:8080` | Use when load balancing or backend-set operations are required. |
+| Nginx reverse proxy | HTTPS `443`, optional HTTP `80` redirect | `http://127.0.0.1:8080` or private IP | Use for VM-hosted deployments with externally managed certificates. |
+| Caddy reverse proxy | HTTPS `443`, optional HTTP `80` redirect | `http://127.0.0.1:8080` or private IP | Use for lightweight VM-hosted deployments with automatic certificate renewal. |
+
 ## 10. Deployment View
 
 The first repository version is optimized for local and integration-contract validation.
@@ -203,6 +212,8 @@ Deployment-ready assumptions:
 
 - OIC calls the API over HTTPS through the selected gateway, load balancer, or reverse proxy.
 - The gateway, load balancer, or reverse proxy forwards traffic to the application over HTTP on the private/internal service address and port, defaulting to `8080`.
+- The preferred production target is OCI API Gateway on HTTPS `443` forwarding to the private app endpoint on HTTP `8080`.
+- If Nginx or Caddy is used, HTTP `80` should redirect to HTTPS `443`; the app port `8080` should not be publicly reachable.
 - Provider credentials are injected as environment variables in hosted live mode or loaded from untracked `.env` in local development.
 - Alpha Vantage `GLOBAL_QUOTE` requires `function=GLOBAL_QUOTE`, a ticker `symbol`, and `apikey`.
 - Alpha Vantage quote freshness depends on API entitlement; realtime or 15-minute delayed data is not guaranteed by default.
@@ -223,6 +234,7 @@ Traceability summary:
 | Quote retrieval / mock mode | Architecture Overview, Major Components |
 | Alpha Vantage live provider | Architecture Overview, Major Components, Operations Design |
 | OIC-compatible HTTPS exposure | Architecture Overview, Security Design, Operations Design, Deployment View |
+| Concrete ingress/proxy selection | Operations Design, Deployment View |
 | `.env` credential parsing | Security Design, Deployment View |
 | Alert evaluation | Major Components, Data Flow |
 | OIC-friendly response | OIC Integration Pattern |
@@ -238,6 +250,7 @@ Traceability summary:
 | Default to mock provider | Enables deterministic local tests and contract validation without external dependencies. |
 | Add Alpha Vantage as first live provider | Provides a concrete outbound REST integration while preserving the existing provider abstraction. |
 | Terminate TLS outside the Python server | Keeps the MVP server dependency-free while satisfying OIC HTTPS invoke requirements through platform ingress controls. |
+| Prefer OCI API Gateway for OIC-facing traffic | Aligns with OCI-native REST ingress controls and keeps certificate, policy, logging, and throttling concerns outside the app process. |
 | Use untracked `.env` only for local secrets | Keeps API keys out of Git while allowing local live-provider testing. |
 | Keep response mapper explicit | Prevents accidental breaking changes to OIC routing contracts. |
 | Keep dependencies minimal | Makes the first API version easy to clone, test, and run. |

@@ -64,6 +64,39 @@ Runtime stack:
 - `unittest` for evaluator and HTTP contract tests.
 - No third-party runtime dependencies.
 
+### 2.4 HTTPS Ingress And Proxy Design
+
+The selected OIC-ready ingress pattern is:
+
+```text
+OIC REST Invoke
+  |
+  | HTTPS :443
+  v
+OCI API Gateway
+  |
+  | HTTP private target :8080
+  v
+oic_stock_alert.server
+```
+
+Preferred option:
+
+| Option | Use When | Design |
+|--------|----------|--------|
+| OCI API Gateway | Production or shared OIC-facing endpoint | Public HTTPS `443`; forwards to private HTTP app endpoint on `8080`; owns TLS certificate, access policy, logging, and throttling. |
+| OCI Load Balancer | Service is already behind a backend set or needs L7/L4 load balancing | Public HTTPS `443`; backend set points to private app host and port `8080`. |
+| Nginx | VM-hosted deployment with enterprise-managed certificates | Public HTTPS `443`; optional HTTP `80 -> 443` redirect; reverse proxy to `http://127.0.0.1:8080` or private IP. |
+| Caddy | Lightweight VM-hosted deployment with automatic certificate management | Public HTTPS `443`; automatic certificate renewal; reverse proxy to `http://127.0.0.1:8080` or private IP. |
+
+Design rules:
+
+- OIC must use the HTTPS ingress URL, not the raw app server URL.
+- The app server continues to listen on HTTP `8080` unless `PORT` is changed.
+- Public HTTP `80`, when enabled, must redirect to HTTPS `443` at the ingress layer.
+- Public access to app port `8080` must be blocked by firewall, security list, or security group rules.
+- Ingress should forward `Host`, `X-Forwarded-Proto`, `X-Forwarded-For`, and `X-Request-Id` where supported.
+
 Module layout:
 
 | Module | Purpose |
@@ -78,7 +111,7 @@ Module layout:
 | `oic_stock_alert/app.py` | Application service layer. |
 | `oic_stock_alert/server.py` | HTTP route handling and server entry point. |
 
-### 2.4 Alpha Vantage Live Provider Architecture
+### 2.5 Alpha Vantage Live Provider Architecture
 
 The live provider path is enabled only when runtime configuration selects live mode:
 
