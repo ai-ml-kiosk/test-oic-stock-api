@@ -33,7 +33,12 @@ The MVP is implemented as a dependency-free Python standard-library HTTP service
 ```text
 OIC Integration
   |
-  | POST /v1/alerts/evaluate
+  | HTTPS POST /v1/alerts/evaluate
+  v
+TLS Termination Layer
+(OCI API Gateway / OCI Load Balancer / Reverse Proxy)
+  |
+  | HTTP private/internal service call
   v
 HTTP Route Handler
   |
@@ -157,6 +162,8 @@ Security controls:
 
 - Reject malformed JSON and invalid request shape.
 - Enforce symbol, rule count, operator, metric, severity, and threshold validation.
+- Require OIC-facing REST invokes to enter through HTTPS at the gateway, load balancer, or reverse-proxy layer.
+- Keep `oic_stock_alert.server` as an HTTP-only internal service; do not expose it directly on a public IP without a protected TLS termination layer.
 - Keep provider credentials in environment variables or untracked local `.env` files only.
 - Commit only `.env.example` placeholders; never commit `.env` or `.env*` secret files.
 - Do not return provider credentials or runtime secret configuration in responses.
@@ -171,6 +178,8 @@ Operational behavior is intentionally simple:
 |------|--------|
 | Runtime | Python 3.11+ standard-library HTTP server. |
 | Default port | `8080`, configurable with `PORT`. |
+| HTTPS boundary | External TLS termination by OCI API Gateway, OCI Load Balancer, or reverse proxy. |
+| Internal service protocol | Plain HTTP from the TLS termination layer to `oic_stock_alert.server`. |
 | Provider mode | `mock` by default, configurable with `QUOTE_PROVIDER_MODE`. |
 | Live provider | `alpha_vantage` through Alpha Vantage `GLOBAL_QUOTE` when explicitly configured. |
 | Timeout | Provider timeout target controlled by `QUOTE_PROVIDER_TIMEOUT_MS`, defaulting to 1500 ms. |
@@ -178,13 +187,22 @@ Operational behavior is intentionally simple:
 | Correlation | `requestId` and `oic.trackingId` included in success and error responses. |
 | Retry hint | `oic.retryRecommended` is `true` for provider timeout and system error paths. |
 
+Required operations controls:
+
+- Public listener must use a valid TLS certificate trusted by OIC.
+- Firewall, security list, or security group rules must allow inbound HTTPS only to the selected gateway, load balancer, or reverse proxy.
+- The application port, default `8080`, should be reachable only from the TLS termination layer or trusted private network.
+- Certificate renewal and expiry monitoring must be owned by the selected ingress platform.
+- Health checks should call `GET /health` through the same ingress path used by OIC where possible.
+
 ## 10. Deployment View
 
 The first repository version is optimized for local and integration-contract validation.
 
 Deployment-ready assumptions:
 
-- OIC can call the API over HTTPS once hosted behind the selected gateway or runtime platform.
+- OIC calls the API over HTTPS through the selected gateway, load balancer, or reverse proxy.
+- The gateway, load balancer, or reverse proxy forwards traffic to the application over HTTP on the private/internal service address and port, defaulting to `8080`.
 - Provider credentials are injected as environment variables in hosted live mode or loaded from untracked `.env` in local development.
 - Alpha Vantage `GLOBAL_QUOTE` requires `function=GLOBAL_QUOTE`, a ticker `symbol`, and `apikey`.
 - Alpha Vantage quote freshness depends on API entitlement; realtime or 15-minute delayed data is not guaranteed by default.
@@ -204,6 +222,7 @@ Traceability summary:
 | Rule input | API Overview, Data Flow |
 | Quote retrieval / mock mode | Architecture Overview, Major Components |
 | Alpha Vantage live provider | Architecture Overview, Major Components, Operations Design |
+| OIC-compatible HTTPS exposure | Architecture Overview, Security Design, Operations Design, Deployment View |
 | `.env` credential parsing | Security Design, Deployment View |
 | Alert evaluation | Major Components, Data Flow |
 | OIC-friendly response | OIC Integration Pattern |
@@ -218,6 +237,7 @@ Traceability summary:
 | Use branch field `response.oic.switchBranch` | Reduces OIC Switch mapping ambiguity. |
 | Default to mock provider | Enables deterministic local tests and contract validation without external dependencies. |
 | Add Alpha Vantage as first live provider | Provides a concrete outbound REST integration while preserving the existing provider abstraction. |
+| Terminate TLS outside the Python server | Keeps the MVP server dependency-free while satisfying OIC HTTPS invoke requirements through platform ingress controls. |
 | Use untracked `.env` only for local secrets | Keeps API keys out of Git while allowing local live-provider testing. |
 | Keep response mapper explicit | Prevents accidental breaking changes to OIC routing contracts. |
 | Keep dependencies minimal | Makes the first API version easy to clone, test, and run. |

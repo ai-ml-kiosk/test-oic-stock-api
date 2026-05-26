@@ -26,6 +26,13 @@ The companion HLD is:
 
 ## 3. Endpoint Detail
 
+OIC-facing endpoint exposure:
+
+- OIC invokes the API over HTTPS at the external ingress endpoint.
+- HTTPS terminates at OCI API Gateway, OCI Load Balancer, or a reverse proxy.
+- `oic_stock_alert.server` remains an HTTP-only internal service, normally listening on port `8080`.
+- The internal HTTP port must be reachable only from the TLS termination layer or trusted private network, not directly from the public internet.
+
 ### 3.1 `GET /health`
 
 Response status:
@@ -134,6 +141,19 @@ Parser rules:
 - Do not execute shell commands, substitutions, or nested variable expansion.
 - Process environment variables override `.env` values.
 - Do not expose `QUOTE_PROVIDER_API_KEY` in diagnostics, logs, exceptions, or responses.
+
+## 4.2 Deployment and HTTPS Runtime Configuration
+
+The Python service does not terminate TLS. HTTPS configuration belongs to the selected ingress layer.
+
+| Setting or Control | Location | Requirement |
+|--------------------|----------|-------------|
+| TLS certificate | Gateway, load balancer, or reverse proxy | Must be valid and trusted by OIC. |
+| HTTPS listener | Gateway, load balancer, or reverse proxy | Must expose the OIC invoke URL over TCP `443` or the approved HTTPS port. |
+| Internal target | Ingress backend configuration | Must forward to the HTTP application service, default `http://<private-host>:8080`. |
+| Application port | `PORT` environment variable | Defaults to `8080`; should not be publicly exposed directly. |
+| Firewall / security list | Cloud network or host firewall | Allow inbound HTTPS to ingress; restrict application port to ingress/private callers only. |
+| Certificate renewal | Ingress operations | Must be monitored so OIC invokes do not fail because of expiry. |
 
 ## 5. Response JSON Payloads
 
@@ -385,6 +405,13 @@ Error logging mapping:
 | `errors.py` | stock alert exception classes | Converts validation, provider, timeout, and system conditions into stable error metadata. |
 | `app.py` | application service | Coordinates validation, provider lookup, evaluation, mapping, and error handling. |
 | `server.py` | HTTP handler | Parses requests, routes endpoints, serializes JSON responses, and emits status codes. |
+
+`server.py` runtime boundary:
+
+- Uses Python `ThreadingHTTPServer` for plain HTTP handling.
+- Does not load certificates or private keys.
+- Does not implement HTTPS listeners directly.
+- Relies on the deployment ingress layer to provide OIC-compatible HTTPS.
 
 ## 9. Error Contract
 

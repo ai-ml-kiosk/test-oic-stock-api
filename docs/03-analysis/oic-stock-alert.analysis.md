@@ -5,24 +5,24 @@
 
 ---
 
-## Match Rate: 94%
+## Match Rate: 95%
 
-Calculation: 51 implemented or substantially matched items / 54 tracked design and verification items = 94%.
+Calculation: 57 implemented or substantially matched items / 60 tracked design and verification items = 95%.
 
-The implementation remains above the PDCA report threshold, but the latest handover review identified provider-test structural gaps that should be tracked before report signoff. The Alpha Vantage live-provider extension and zero-trust `.env` configuration layer are implemented behind runtime configuration, while the existing mock path and OIC response contract remain stable.
+The implementation remains above the PDCA report threshold. The Alpha Vantage live-provider extension, zero-trust `.env` configuration layer, direct test-file execution support, and latest timeout/mock fixes are implemented and verified. The HTTPS/OIC exposure extension is correctly documented as an external ingress responsibility, but deployment-level HTTPS smoke tests are not yet present in this repository.
 
 ## Summary
 
-The implementation now matches the updated 1.1 design for the OIC Stock Alert API. The codebase includes the original mock-provider MVP plus:
+The current implementation matches the updated OIC Stock Alert design for the local API service and provider behavior:
 
-- Alpha Vantage `GLOBAL_QUOTE` live provider module.
-- Local untracked `.env` parsing with process-environment precedence.
-- `.env.example` placeholder template.
-- Live-provider selection through `QUOTE_PROVIDER_MODE=live` and `QUOTE_PROVIDER_NAME=alpha_vantage`.
-- Alpha Vantage response normalization into the internal `Quote` shape.
-- Upstream provider error mapping for empty quote, rate-limit note, invalid-key/information payload, timeout, malformed JSON, and malformed quote payloads.
-- Fixture-based tests that do not require live network access or a real API key.
-- Discovery-based and direct test-file execution from the repository root.
+- Mock provider remains the safe default.
+- Alpha Vantage `GLOBAL_QUOTE` live provider is available behind explicit runtime configuration.
+- Local untracked `.env` parsing is implemented with process-environment precedence.
+- OIC-facing JSON response contracts and Switch branch fields remain stable.
+- Provider timeout tests now patch `urlopen` with `URLError(socket.timeout("timed out"))`.
+- Environment-backed settings tests now use `patch.dict` before `load_settings()`.
+- Test files support both unittest discovery and direct file execution from the repository root.
+- HTTPS/OIC exposure is documented as `OIC -> HTTPS Gateway/LB/Proxy -> HTTP service:8080`; the Python server remains HTTP-only by design.
 
 Verification command:
 
@@ -30,17 +30,7 @@ Verification command:
 python3 -m unittest discover -s tests
 ```
 
-Result: 26 tests passing.
-
-Direct execution verification:
-
-```sh
-python3 tests/test_alpha_vantage_provider.py
-python3 tests/test_env_loader.py
-python3 tests/test_api_contract.py
-python3 tests/test_artifacts.py
-python3 tests/test_evaluator.py
-```
+Latest result: 26 tests passing.
 
 ## Implemented Items
 
@@ -56,6 +46,7 @@ python3 tests/test_evaluator.py
 - [x] Response mapper exists in `oic_stock_alert/mapper.py`.
 - [x] Error mapper exists through `oic_stock_alert/errors.py` and `oic_stock_alert/mapper.py`.
 - [x] Logger emits request ID, symbol, provider mode, decision code, and error code without full provider URLs.
+- [x] Server remains dependency-free and HTTP-only, matching the documented TLS-termination boundary.
 
 ### API Endpoints
 
@@ -92,6 +83,15 @@ python3 tests/test_evaluator.py
 - [x] `.env` and `.env*` are ignored by `.gitignore`.
 - [x] `.env.example` is present with placeholder values only.
 
+### HTTPS / OIC Exposure Design
+
+- [x] Plan scope includes OIC-compatible HTTPS exposure through external TLS termination.
+- [x] HLD shows `OIC -> HTTPS Gateway/LB/Proxy -> HTTP service:8080`.
+- [x] HLD security and operations sections define TLS certificate, firewall/security-list, and private backend requirements.
+- [x] LLD states `oic_stock_alert.server` remains HTTP-only and does not load certificates or private keys.
+- [x] LLD defines deployment runtime controls for TLS certificate, HTTPS listener, internal target, application port, firewall/security list, and certificate renewal.
+- [x] Implementation aligns with this model by using `ThreadingHTTPServer` without in-process TLS.
+
 ### JSON Payloads
 
 - [x] Evaluation request fields are normalized and validated: `requestId`, `source`, `symbol`, `currency`, `rules`, and `options`.
@@ -121,17 +121,10 @@ python3 tests/test_evaluator.py
 - [x] Alpha Vantage `Error Message` maps to `QUOTE_NOT_FOUND` / `QUOTE_UNAVAILABLE`.
 - [x] Alpha Vantage `Note` maps to `PROVIDER_ERROR` / `QUOTE_UNAVAILABLE`.
 - [x] Alpha Vantage `Information` maps to `PROVIDER_ERROR` / `QUOTE_UNAVAILABLE`.
-- [x] Outbound timeout maps to `PROVIDER_TIMEOUT` / `PROVIDER_TIMEOUT` with retry recommended.
+- [x] Raw `socket.timeout` maps to `PROVIDER_TIMEOUT` / `PROVIDER_TIMEOUT` with retry recommended.
+- [x] `URLError(socket.timeout("timed out"))` maps to `PROVIDER_TIMEOUT` / `PROVIDER_TIMEOUT` with retry recommended.
 - [x] Malformed JSON maps to `PROVIDER_ERROR` / `QUOTE_UNAVAILABLE`.
 - [x] Malformed quote payload maps to `PROVIDER_ERROR` / `QUOTE_UNAVAILABLE`.
-
-### Alert Evaluation
-
-- [x] `gt`, `gte`, `lt`, `lte`, `eq`, and `absGte` operator behavior is implemented.
-- [x] Rule-level evaluation includes actual value, trigger status, severity, and message.
-- [x] Aggregate decision maps triggered rules to `ALERT_TRIGGERED`.
-- [x] Aggregate decision maps no triggered rules to `NO_ALERT`.
-- [x] Highest triggered severity is selected for aggregate alert decisions.
 
 ### OIC Switch Branches
 
@@ -154,53 +147,53 @@ python3 tests/test_evaluator.py
 - [x] Artifact tests validate JSON parsing, sample request branch behavior, and response branch values.
 - [x] `.env` tests cover comments, blank lines, quoted values, and process-environment precedence.
 - [x] Alpha Vantage tests cover quote normalization, empty quote, rate-limit note, invalid-key information, malformed quote, unsupported provider, missing API key, and timeout.
+- [x] Alpha Vantage timeout test uses `URLError(socket.timeout("timed out"))` instead of ambiguous no-argument timeout construction.
+- [x] Environment-backed settings tests use `patch.dict` and `load_settings()`.
 - [x] Test files support direct execution from the repository root without manually setting `PYTHONPATH`.
 
 ## Missing Items
 
+- [ ] HTTPS gateway/load-balancer/reverse-proxy smoke tests are not implemented in this repository. This is a deployment validation gap, not an application unit-test gap, because `oic_stock_alert.server` is intentionally HTTP-only.
 - [ ] API-contract-level tests for live Alpha Vantage invalid-symbol and missing-key requests are not yet implemented. Equivalent provider-level coverage exists, and app-level error mapping uses the same `StockAlertError` path as the existing API contract tests.
-- [ ] The generated OpenAPI and JSON Schema artifacts have not yet been extended with live-provider configuration examples. The runtime payload contract remains stable, so this is documentation depth rather than a behavioral gap.
-- [ ] Alpha Vantage timeout tests should simulate the `urlopen` timeout path with `urllib.error.URLError` wrapping a timeout reason, not only a raw `socket.timeout`. This better matches how `urllib.request.urlopen` commonly surfaces network timeouts.
-- [ ] The timeout test should avoid ambiguous no-argument timeout construction and use an explicit timeout reason, for example `socket.timeout("timed out")`, when constructing simulated timeout failures.
-- [ ] Configuration test/design wording should clarify the difference between constructing `Settings(...)` directly for tests and using `load_settings()` for environment-backed runtime loading.
+- [ ] The generated OpenAPI and JSON Schema artifacts have not yet been extended with live-provider configuration or HTTPS ingress examples. The runtime payload contract remains stable, so this is documentation depth rather than a behavioral gap.
 
 ## Changed Items Or Deviations From Design
 
 | Category | Design Item | Implementation | Impact |
 |----------|-------------|----------------|--------|
-| Changed | Design says unexpected provider client exceptions should map to `SYSTEM_ERROR`. | Known HTTP, URL, JSON, malformed quote, rate-limit, and information responses map to provider-specific errors; truly unexpected exceptions still map through the app-level `StockAlertError` fallback. | Low. Stable OIC branches are preserved. |
+| Changed | Design says unexpected provider client exceptions should map to `SYSTEM_ERROR`. | Known HTTP, URL, JSON, malformed quote, rate-limit, and information responses map to provider-specific errors; truly unexpected exceptions still map through the app-level fallback. | Low. Stable OIC branches are preserved. |
 | Changed | Design examples still show health version `1.0.0`. | Runtime health still returns `1.0.0` while design docs are versioned `1.1.0`. | Low. Service version can be bumped during release packaging. |
-| Missing in Tests | API contract tests for live mode. | Provider-level tests cover live behavior without network or real API keys. | Low. Add API-level fixture tests if stricter coverage is needed. |
-| Missing in Artifacts | OpenAPI examples for Alpha Vantage mode. | README, plan, design, HLD, LLD, and Do notes document live mode. | Low. Contract remains unchanged. |
-| Missing in Tests | `urlopen` timeout wrapping. | Current timeout unit test patches `urlopen` with raw `socket.timeout`; implementation also handles `URLError.reason` timeout, but the test does not assert that route. | Medium. Add a fixture for `URLError(socket.timeout("timed out"))`. |
-| Changed | Reported `Settings` constructor behavior. | Current `Settings` is a dataclass and accepts parameter overrides; runtime environment loading is performed by `load_settings()`. | Low. Clarify in design/tests to prevent handover confusion. |
+| Missing in Deployment Tests | OIC-facing HTTPS invoke validation. | Current unittest suite validates the internal HTTP service. No `curl https://<gateway-host>/health` or OIC connection test exists because no gateway/proxy deployment artifact is present. | Medium for production readiness; low for current local API implementation. |
+| Missing in Tests | API contract tests for live mode. | Provider-level tests cover live behavior without network or real API keys. | Low. Add API-level fixture tests if stricter endpoint coverage is required. |
+| Missing in Artifacts | OpenAPI examples for Alpha Vantage mode and HTTPS ingress. | README, plan, design, HLD, LLD, and Do notes document live mode; plan/HLD/LLD document HTTPS ingress. | Low. Contract remains unchanged. |
 
 ## Match Matrix
 
 | Area | Design Items | Matched | Notes |
 |------|--------------|---------|-------|
-| Runtime components | 9 | 9 | Includes new Alpha Vantage and `.env` modules. |
+| Runtime components | 10 | 10 | Includes Alpha Vantage, `.env`, and HTTP-only server boundary. |
 | Endpoints and HTTP contract | 6 | 6 | Health and evaluation routes unchanged and passing. |
+| HTTPS/OIC exposure design | 6 | 5 | Docs and implementation boundary match; deployment smoke tests remain missing. |
 | Request validation | 9 | 9 | Existing validation remains intact. |
 | Response contracts | 6 | 6 | Success, no-alert, error, diagnostics, decision, and OIC metadata implemented. |
 | Alpha Vantage outbound mapping | 8 | 8 | Endpoint, query params, timeout, and normalizer implemented. |
 | `.env` credential handling | 7 | 7 | Parser, precedence, `.gitignore`, and `.env.example` implemented. |
-| Provider error mapping | 8 | 6 | Main provider conditions covered; add explicit `URLError` timeout test coverage. |
+| Provider error mapping | 8 | 8 | Includes `URLError(socket.timeout(...))` timeout path. |
 | Evaluation logic | 4 | 4 | All operators and severity aggregation implemented. |
 | OIC Switch branches | 6 | 6 | All designed branch values implemented. |
-| Tests and artifacts | 9 | 6 | Runtime tests added; direct execution works; timeout fidelity, OpenAPI/schema live examples, and API-level live tests remain tracked gaps. |
+| Tests and artifacts | 10 | 8 | Direct execution and timeout fidelity are fixed; HTTPS smoke tests and richer live/ingress examples remain tracked gaps. |
 
 ## Recommendations
 
-1. Run `$pdca iterate oic-stock-alert` before report signoff to harden the Alpha Vantage timeout tests.
-2. Add a unit test where patched `urlopen` raises `URLError(socket.timeout("timed out"))` and verify it maps to `ProviderTimeoutError`.
-3. Replace ambiguous timeout construction in tests with explicit timeout messages.
-4. Clarify in documentation that `Settings(...)` is the test/config object constructor and `load_settings()` is the environment-backed runtime loader.
-5. Add API-level live-provider fixture tests in a future hardening pass if strict endpoint coverage is required.
+1. Proceed to `$pdca report oic-stock-alert` if the current local API scope is acceptable.
+2. Before production handover, add deployment smoke-test instructions or scripts for `curl https://<gateway-host>/health` and an HTTPS `POST /v1/alerts/evaluate` through the selected ingress.
+3. Add API-level live-provider fixture tests in a future hardening pass if endpoint-level live coverage is required.
+4. Extend OpenAPI/examples with deployment notes for HTTPS ingress and live-provider configuration if the artifacts will be used for OIC handover.
 
 ## Next Steps
 
 - [x] Run implementation, provider, environment, API contract, and artifact tests.
 - [x] Refresh gap analysis document.
-- [x] Log handover-discovered provider-test structural gaps.
-- [ ] Run `$pdca iterate oic-stock-alert` to address timeout test fidelity and configuration wording.
+- [x] Confirm timeout test fidelity and environment-backed settings mock strategy are implemented.
+- [x] Log HTTPS ingress smoke testing as a deployment-validation gap.
+- [ ] Run `$pdca report oic-stock-alert` when ready for handover.

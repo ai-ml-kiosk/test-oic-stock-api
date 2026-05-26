@@ -49,6 +49,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Evaluate alert rules for conditions such as price above, price below, and percentage change.
 - Return structured JSON responses that include quote data, alert match status, and error details.
 - Provide health and readiness endpoints.
+- Support OIC-compatible HTTPS exposure through an external TLS termination layer such as OCI API Gateway, OCI Load Balancer, or a reverse proxy while the application server remains HTTP-only on its internal port.
 - Include configuration for provider API keys through environment variables and untracked local `.env` files.
 - Provide local developer setup and verification instructions.
 - Define basic tests for rule evaluation and API response contracts.
@@ -83,6 +84,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 |----------|-------------|
 | Reliability | Quote provider failures must fail gracefully with clear status codes and messages. |
 | Security | Secrets must be read from environment variables or untracked local `.env` files and never committed. |
+| Security | OIC-facing REST invokes must use HTTPS through external TLS termination; the Python application server must not be exposed directly to the public internet without gateway, load balancer, reverse proxy, firewall, and certificate controls. |
 | Observability | Requests, provider calls, and alert decisions should be logged without exposing secrets. |
 | Performance | A single alert evaluation should complete within 2 seconds in normal provider conditions, and live mode must adhere to configured timeout limits with a default of 1500 ms. |
 | Testability | Rule evaluation must be testable without external network calls. |
@@ -127,6 +129,7 @@ The application is assumed to demonstrate a cloud-native OIC integration pattern
 - Define a quote provider interface with mock and live implementations.
 - Route Alpha Vantage `GLOBAL_QUOTE` payloads through the live provider path without changing the OIC-facing response contract.
 - Prefer JSON contracts that are easy for OIC integrations to map.
+- Use an HTTPS ingress boundary for OIC invokes: `OIC -> HTTPS Gateway/LB/Proxy -> HTTP service:8080`.
 - Use environment-based and untracked `.env` configuration for provider mode, API keys, timeout, and log level.
 - Enforce the configured live provider timeout, defaulting to 1500 ms, and map upstream rate-limit, invalid-symbol, timeout, and provider-error outcomes into existing OIC exception branches.
 - Include request IDs in logs and responses to support OIC troubleshooting.

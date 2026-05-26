@@ -20,6 +20,7 @@ The MVP keeps the service intentionally small:
 
 - A health endpoint for runtime validation.
 - A single alert evaluation endpoint for OIC orchestration.
+- OIC-compatible HTTPS exposure through an external TLS termination layer, with the Python application server remaining HTTP-only internally.
 - A quote provider abstraction with mock mode as the default local path.
 - A live Alpha Vantage provider path for `GLOBAL_QUOTE` orchestration when explicitly enabled.
 - A zero-trust local `.env` configuration layer for API keys, with committed `.env.example` placeholders only.
@@ -59,6 +60,7 @@ Runtime stack:
 
 - Python 3.11 or newer.
 - `http.server.ThreadingHTTPServer` for local API serving.
+- External TLS termination through OCI API Gateway, OCI Load Balancer, or reverse proxy for OIC HTTPS REST invokes.
 - `unittest` for evaluator and HTTP contract tests.
 - No third-party runtime dependencies.
 
