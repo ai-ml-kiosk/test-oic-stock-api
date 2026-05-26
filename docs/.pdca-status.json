@@ -38,16 +38,14 @@
         },
         {
           "phase": "report",
-          "status": "completed",
-          "createdAt": "2026-05-25T05:11:06.255Z",
-          "completedAt": "2026-05-25T07:08:19.871Z"
+          "status": "active",
+          "createdAt": "2026-05-25T05:11:06.255Z"
         }
       ],
       "timestamps": {
         "started": "2026-05-25T05:11:06.258Z",
         "lastUpdated": "2026-05-25T23:55:46.300Z"
-      },
-      "completedAt": "2026-05-25T07:08:19.868Z"
+      }
     }
   },
   "pipeline": {
